@@ -9,7 +9,7 @@
       <StackPanel Spacing="6">
         <TextBlock Text="SETTINGS" Classes="eyebrow" />
         <TextBlock Text="Point us at your mods." Classes="h1" FontSize="48" LineHeight="48" />
-        <TextBlock Text="Feevr reads the same three places Transport Fever 3 does. When a mod sits in more than one, the game uses the copy higher on this list."
+        <TextBlock Text="Junction reads the same three places Transport Fever 3 does. When a mod sits in more than one, the game uses the copy higher on this list."
                    Classes="body" FontSize="15" TextWrapping="Wrap" MaxWidth="640" HorizontalAlignment="Left" />
       </StackPanel>
 
@@ -79,7 +79,7 @@
             </Button>
           </Grid>
           <TextBlock FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap"
-                     Text="Subscribed mods sit in numbered folders with no name inside. Feevr looks the names, authors and tags up on mod.io with a read-only API key. Get one free at mod.io, My account, API access." />
+                     Text="Subscribed mods sit in numbered folders with no name inside. Junction looks the names, authors and tags up on mod.io with a read-only API key. Get one free at mod.io, My account, API access." />
           <Grid ColumnDefinitions="*,Auto,Auto">
             <TextBox Classes="mono" Text="{Binding ModIoKey, UpdateSourceTrigger=LostFocus}" PasswordChar="•" Watermark="mod.io API key"
                      AutomationProperties.Name="mod.io API key" />
@@ -117,17 +117,17 @@
             </Border>
             <TextBlock Text="Performance tracking" Classes="h3" FontSize="24" VerticalAlignment="Center" />
           </StackPanel>
-          <TextBlock Text="Game process name. Feevr watches for it and records CPU and memory each second while you play. Separate several names with commas."
+          <TextBlock Text="Game process name. Junction watches for it and records CPU and memory each second while you play. Separate several names with commas."
                      FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
           <TextBox Classes="mono" Text="{Binding GameProcess, UpdateSourceTrigger=LostFocus}" Watermark="TransportFever3" AutomationProperties.Name="Game process name" />
-          <TextBlock Text="Probe file. Optional. Written by the Feevr perf probe mod; gives measured per-mod timings."
+          <TextBlock Text="Probe file. Optional. Written by the Junction perf probe mod; gives measured per-mod timings."
                      FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" />
           <Grid ColumnDefinitions="*,Auto">
-            <TextBox Classes="mono" Text="{Binding ProbeFile, UpdateSourceTrigger=LostFocus}" Watermark="[GAME USERDATA]/feevr/probe.lua" AutomationProperties.Name="Probe file" />
+            <TextBox Classes="mono" Text="{Binding ProbeFile, UpdateSourceTrigger=LostFocus}" Watermark="[GAME USERDATA]/junction/probe.lua" AutomationProperties.Name="Probe file" />
             <Button Grid.Column="1" Margin="8,0,0,0" MinHeight="42" Click="BrowseProbe_Click"><TextBlock Text="Browse" /></Button>
           </Grid>
           <TextBlock Text="{Binding ProbeState}" Classes="mono" FontSize="12" Foreground="{StaticResource Muted2}" />
-          <TextBlock Text="Game log folder. Optional. Feevr finds it on its own for Steam (crash_dump in Steam's userdata) and GOG/Epic. Set it if the Crashes page comes up empty."
+          <TextBlock Text="Game log folder. Optional. Junction finds it on its own for Steam (crash_dump in Steam's userdata) and GOG/Epic. Set it if the Crashes page comes up empty."
                      FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" />
           <Grid ColumnDefinitions="*,Auto">
             <TextBox Classes="mono" Text="{Binding CrashDir, UpdateSourceTrigger=LostFocus}" Watermark="{Binding CrashDirHint}" AutomationProperties.Name="Game log folder" />
@@ -151,7 +151,7 @@
           <Grid ColumnDefinitions="*,Auto">
             <StackPanel Spacing="3">
               <TextBlock Text="Check for new versions automatically" FontWeight="SemiBold" />
-              <TextBlock Text="Feevr checks GitHub when it starts and every few hours. Updates install with one click and keep your settings, playsets and sessions."
+              <TextBlock Text="Junction checks GitHub when it starts and every few hours. Updates install with one click and keep your settings, playsets and sessions."
                          FontSize="13" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
             </StackPanel>
             <ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoUpdate}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"
@@ -183,7 +183,7 @@
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Spacing="2">
             <TextBlock Text="Sync with the game's own mod list" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="20" Foreground="{StaticResource Muted}" />
-            <TextBlock Text="Not available yet. Playsets live in Feevr until we know where the game keeps its enabled list." FontSize="13" Foreground="{StaticResource Faint}" TextWrapping="Wrap" />
+            <TextBlock Text="Not available yet. Playsets live in Junction until we know where the game keeps its enabled list." FontSize="13" Foreground="{StaticResource Faint}" TextWrapping="Wrap" />
           </StackPanel>
           <Border Grid.Column="1" Classes="tag" VerticalAlignment="Center">
             <TextBlock Text="PLANNED" FontFamily="{StaticResource CondFont}" FontWeight="Bold" LetterSpacing="1.2" />
@@ -192,7 +192,7 @@
       </Border>
 
       <TextBlock Classes="faint small" TextWrapping="Wrap"
-                 Text="Feevr is a fan-made tool, not affiliated with Urban Games. Fonts: Barlow and JetBrains Mono (SIL OFL)." />
+                 Text="Junction is a fan-made tool, not affiliated with Urban Games. Fonts: Barlow and JetBrains Mono (SIL OFL)." />
     </StackPanel>
   </ScrollViewer>
 </UserControl>

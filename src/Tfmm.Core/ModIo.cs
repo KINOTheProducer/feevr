@@ -170,7 +170,7 @@ public static partial class ModIo
             {
                 using var req = new HttpRequestMessage(HttpMethod.Get, url);
                 req.Headers.Accept.ParseAdd("application/json");
-                req.Headers.UserAgent.ParseAdd("Feevr");
+                req.Headers.UserAgent.ParseAdd("Junction");
                 using var res = await http.SendAsync(req, ct).ConfigureAwait(false);
                 if (!res.IsSuccessStatusCode) break;
                 foreach (var info in ParseMods(await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false)))

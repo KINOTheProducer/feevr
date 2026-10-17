@@ -23,14 +23,14 @@ public class UpdaterTests
     }
 
     const string Latest = "https://api.github.com/repos/KINOTheProducer/feevr/releases/latest";
-    const string ExeUrl = "https://github.com/KINOTheProducer/feevr/releases/download/v1.2.0/Feevr.exe";
-    const string ShaUrl = "https://github.com/KINOTheProducer/feevr/releases/download/v1.2.0/Feevr.exe.sha256";
+    const string ExeUrl = "https://github.com/KINOTheProducer/feevr/releases/download/v1.2.0/Junction.exe";
+    const string ShaUrl = "https://github.com/KINOTheProducer/feevr/releases/download/v1.2.0/Junction.exe.sha256";
 
     static string ReleaseJson(string tag = "v1.2.0", bool draft = false, bool pre = false, bool withSha = true) => $$"""
         { "tag_name": "{{tag}}", "draft": {{(draft ? "true" : "false")}}, "prerelease": {{(pre ? "true" : "false")}},
           "html_url": "https://github.com/KINOTheProducer/feevr/releases/tag/{{tag}}", "body": "Faster charts.",
-          "assets": [ { "name": "Feevr.exe", "browser_download_url": "{{ExeUrl}}" }
-                      {{(withSha ? $", {{ \"name\": \"Feevr.exe.sha256\", \"browser_download_url\": \"{ShaUrl}\" }}" : "")}} ] }
+          "assets": [ { "name": "Junction.exe", "browser_download_url": "{{ExeUrl}}" }
+                      {{(withSha ? $", {{ \"name\": \"Junction.exe.sha256\", \"browser_download_url\": \"{ShaUrl}\" }}" : "")}} ] }
         """;
 
     [Theory]
@@ -44,7 +44,7 @@ public class UpdaterTests
     }
 
     [Fact]
-    public void RejectsJunkTags() => Assert.False(Updater.TryParse("feevr-latest", out _));
+    public void RejectsJunkTags() => Assert.False(Updater.TryParse("junction-latest", out _));
 
     [Fact]
     public void ParsesRelease()
@@ -82,7 +82,7 @@ public class UpdaterTests
     {
         using var t = new TempDir();
         var exe = "MZ fake exe bytes"u8.ToArray();
-        var sha = Convert.ToHexString(SHA256.HashData(exe)).ToLowerInvariant() + "  Feevr.exe\n";
+        var sha = Convert.ToHexString(SHA256.HashData(exe)).ToLowerInvariant() + "  Junction.exe\n";
         var http = new HttpClient(new FakeHttp(new() { [ExeUrl] = exe, [ShaUrl] = Encoding.UTF8.GetBytes(sha) }));
         var path = await Updater.DownloadAsync(http, Updater.ParseRelease(ReleaseJson())!, t.Root);
         Assert.Equal(exe, File.ReadAllBytes(path));
@@ -92,10 +92,10 @@ public class UpdaterTests
     public async Task RejectsTamperedOrUnsignedDownloads()
     {
         using var t = new TempDir();
-        var wrong = new string('a', 64) + "  Feevr.exe";
+        var wrong = new string('a', 64) + "  Junction.exe";
         var http = new HttpClient(new FakeHttp(new() { [ExeUrl] = "MZ evil"u8.ToArray(), [ShaUrl] = Encoding.UTF8.GetBytes(wrong) }));
         await Assert.ThrowsAsync<InvalidOperationException>(() => Updater.DownloadAsync(http, Updater.ParseRelease(ReleaseJson())!, t.Root));
-        Assert.False(File.Exists(Path.Combine(t.Root, "Feevr.new.exe")));
+        Assert.False(File.Exists(Path.Combine(t.Root, "Junction.new.exe")));
         await Assert.ThrowsAsync<InvalidOperationException>(() => Updater.DownloadAsync(http, Updater.ParseRelease(ReleaseJson(withSha: false))!, t.Root));
     }
 
@@ -103,8 +103,8 @@ public class UpdaterTests
     public void SwapsAndCleansUp()
     {
         using var t = new TempDir();
-        var cur = Path.Combine(t.Root, "Feevr.exe");
-        var neu = Path.Combine(t.Root, "Feevr.new.exe");
+        var cur = Path.Combine(t.Root, "Junction.exe");
+        var neu = Path.Combine(t.Root, "Junction.new.exe");
         File.WriteAllText(cur, "old");
         File.WriteAllText(neu, "new");
         Updater.Swap(cur, neu);
@@ -118,7 +118,7 @@ public class UpdaterTests
     public void SwapRollsBackWhenNewFileIsMissing()
     {
         using var t = new TempDir();
-        var cur = Path.Combine(t.Root, "Feevr.exe");
+        var cur = Path.Combine(t.Root, "Junction.exe");
         File.WriteAllText(cur, "old");
         Assert.ThrowsAny<IOException>(() => Updater.Swap(cur, Path.Combine(t.Root, "missing.exe")));
         Assert.Equal("old", File.ReadAllText(cur));

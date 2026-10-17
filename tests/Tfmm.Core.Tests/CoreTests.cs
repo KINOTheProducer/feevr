@@ -329,7 +329,7 @@ public class StateTests
         var settings = Path.Combine(t.Root, "settings.lua");
         File.WriteAllText(settings, "function data()\nreturn { mainMenuState = { activeModsState = { }, }, }\nend");
         s.Config.GameSettings = settings;
-        s.Config.GameProcess = "feevr-no-such-process";
+        s.Config.GameProcess = "junction-no-such-process";
         Assert.Null(s.WriteActivePlayset());
 
         var ps = s.CreatePlayset("Set", ["b_addon", "a_base"]);
@@ -337,5 +337,43 @@ public class StateTests
         Assert.Equal(2, s.WriteActivePlayset());
         Assert.Contains("activeModsState = { \"a_base\", \"b_addon\", }", File.ReadAllText(settings));
         Assert.True(File.Exists(settings + ".bak"));
+    }
+}
+
+public class MigrateHomeTests
+{
+    [Fact]
+    public void MovesOldFolderOnce()
+    {
+        using var t = new TempDir();
+        string legacy = Path.Combine(t.Root, "feevr"), home = Path.Combine(t.Root, "junction");
+        Directory.CreateDirectory(Path.Combine(legacy, "playsets"));
+        File.WriteAllText(Path.Combine(legacy, "config.json"), "{}");
+
+        Assert.Equal(home, AppState.MigrateHome(legacy, home));
+        Assert.False(Directory.Exists(legacy));
+        Assert.True(File.Exists(Path.Combine(home, "config.json")));
+        Assert.True(Directory.Exists(Path.Combine(home, "playsets")));
+    }
+
+    [Fact]
+    public void LeavesBothAloneWhenNewFolderExists()
+    {
+        using var t = new TempDir();
+        string legacy = Path.Combine(t.Root, "feevr"), home = Path.Combine(t.Root, "junction");
+        Directory.CreateDirectory(legacy);
+        Directory.CreateDirectory(home);
+
+        Assert.Equal(home, AppState.MigrateHome(legacy, home));
+        Assert.True(Directory.Exists(legacy));
+    }
+
+    [Fact]
+    public void FreshInstallUsesNewFolder()
+    {
+        using var t = new TempDir();
+        var home = Path.Combine(t.Root, "junction");
+        Assert.Equal(home, AppState.MigrateHome(Path.Combine(t.Root, "feevr"), home));
+        Assert.False(Directory.Exists(home));
     }
 }

@@ -4,8 +4,8 @@
         xmlns:v="using:Tfmm.App.Views"
         x:Class="Tfmm.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
-        Title="Feevr"
-        Icon="/Assets/feevr.ico"
+        Title="Junction"
+        Icon="/Assets/junction.ico"
         Width="1440" Height="900" MinWidth="1100" MinHeight="680"
         WindowStartupLocation="CenterScreen">
 
@@ -16,9 +16,9 @@
       <DockPanel Margin="16,22,16,18">
 
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="6,0,0,28">
-          <v:Logo />
+          <v:Logo Loading="{Binding IsLoading}" />
           <StackPanel VerticalAlignment="Center" Spacing="0">
-            <TextBlock Text="FEEVR" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="24" LetterSpacing="1.2" />
+            <TextBlock Text="JUNCTION" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="24" LetterSpacing="1.2" />
             <TextBlock Text="Transport Fever 3" FontSize="11.5" Foreground="{StaticResource Muted2}" />
           </StackPanel>
         </StackPanel>

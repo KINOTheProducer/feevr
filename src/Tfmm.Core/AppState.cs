@@ -17,7 +17,7 @@ public sealed class Config
     public string GameProcess { get; set; } = "TransportFever3";
     /// <summary>Lua file written by the perf-probe mod (in the game's userdata folder, path unverified).</summary>
     public string ProbeFile { get; set; } = "";
-    /// <summary>Check GitHub Releases for a newer Feevr at startup and every few hours.</summary>
+    /// <summary>Check GitHub Releases for a newer Junction at startup and every few hours.</summary>
     public bool AutoUpdate { get; set; } = true;
     /// <summary>The user's read-only mod.io API key (mod.io → My account → API access). Used only to look up mod names.</summary>
     public string ModIoApiKey { get; set; } = "";
@@ -59,7 +59,24 @@ public sealed partial class AppState
     }
 
     public static string DefaultHome() =>
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "junction");
+
+    /// <summary>Where settings lived before the rename to Junction.</summary>
+    public static string LegacyHome() =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "feevr");
+
+    /// <summary>Moves <paramref name="legacy"/> to <paramref name="home"/> when only the old folder exists.
+    /// Returns the folder to use: <paramref name="legacy"/> if the move failed (say an old copy still has it open).</summary>
+    public static string MigrateHome(string legacy, string home)
+    {
+        if (Directory.Exists(home) || !Directory.Exists(legacy)) return home;
+        try
+        {
+            Directory.Move(legacy, home);
+            return home;
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return legacy; }
+    }
 
     public string PlaysetDir => Path.Combine(Home, "playsets");
     string ConfigPath => Path.Combine(Home, "config.json");

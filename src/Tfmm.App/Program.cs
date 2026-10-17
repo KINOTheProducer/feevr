@@ -15,9 +15,10 @@ public static class Program
 
     public static AppState CreateState(string[] args)
     {
-        var home = AppState.DefaultHome();
         var i = Array.IndexOf(args, "--home");
-        if (i >= 0 && i + 1 < args.Length) home = args[i + 1];
+        var home = i >= 0 && i + 1 < args.Length ? args[i + 1]
+            : args.Contains("--demo") ? AppState.DefaultHome()
+            : AppState.MigrateHome(AppState.LegacyHome(), AppState.DefaultHome());
         if (!args.Contains("--demo"))
         {
             var state = new AppState(home);
@@ -25,7 +26,7 @@ public static class Program
             return state;
         }
 
-        var tmp = Directory.CreateTempSubdirectory("feevr-demo-").FullName;
+        var tmp = Directory.CreateTempSubdirectory("junction-demo-").FullName;
         var s = new AppState(Path.Combine(tmp, "home"));
         s.AddRoot(ModSource.Manual, Demo.Write(Path.Combine(tmp, "mods")));
         var main = s.CreatePlayset("Main Campaign", ["demo_line_manager", "demo_classic_trams", "demo_modern_tram", "demo_better_stations"]);

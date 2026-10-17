@@ -78,7 +78,7 @@
         </ListBox>
         <StackPanel Grid.Row="1" IsVisible="{Binding IsEmpty}" VerticalAlignment="Center" Margin="24" Spacing="8">
           <TextBlock Text="No game logs found" Classes="h3" />
-          <TextBlock Text="Feevr looked in:" Classes="muted2 small" />
+          <TextBlock Text="Junction looked in:" Classes="muted2 small" />
           <TextBlock Text="{Binding WhereText}" Classes="mono" FontSize="11.5" Foreground="{StaticResource Faint2}" TextWrapping="Wrap" />
           <TextBlock Text="Play once, or set the log folder in Settings." Classes="muted2 small" TextWrapping="Wrap" />
         </StackPanel>
