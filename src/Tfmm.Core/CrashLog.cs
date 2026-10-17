@@ -39,7 +39,7 @@ public sealed class CrashReport
 /// TF2's, so all of it is unverified for TF3. Matching is loose on purpose.</summary>
 public static partial class CrashLogs
 {
-    public const string SteamAppId = "3493540";
+    public const string SteamAppId = "3493540";  // unverified
     const long MaxRead = 16L << 20;
     const int ContextLines = 12;
 
@@ -56,8 +56,8 @@ public static partial class CrashLogs
     [GeneratedRegex(@"0x[0-9a-fA-F]+|\b\d+(\.\d+)?\b")]
     private static partial Regex NumberRe();
 
-    /// <summary>TF3's folders in Steam's userdata (userdata\&lt;user&gt;\3493540), one per Steam account.</summary>
-    public static List<string> SteamGameDirs()
+    /// <summary>Where TF3 likely writes its logs on this machine. Only existing folders are returned.</summary>
+    public static List<string> DefaultDirs()
     {
         var dirs = new List<string>();
         var steamRoots = new[]
@@ -73,17 +73,10 @@ public static partial class CrashLogs
             try
             {
                 foreach (var user in Directory.GetDirectories(userdata))
-                    dirs.Add(Path.Combine(user, SteamAppId));
+                    dirs.Add(Path.Combine(user, SteamAppId, "local", "crash_dump"));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
         }
-        return dirs.Where(Directory.Exists).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
-    }
-
-    /// <summary>Where TF3 likely writes its logs on this machine. Only existing folders are returned.</summary>
-    public static List<string> DefaultDirs()
-    {
-        var dirs = SteamGameDirs().Select(d => Path.Combine(d, "local", "crash_dump")).ToList();
         dirs.Add(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Transport Fever 3"));
         return dirs.Where(Directory.Exists).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
     }
