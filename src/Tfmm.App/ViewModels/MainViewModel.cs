@@ -65,7 +65,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _updateBusy;
     [ObservableProperty] private string _updateStatus = "";
     public bool HasUpdate => Update is not null;
-    public string UpdateTitle => Update is null ? "" : $"Feevr {Update.Version.ToString(3)} is out";
+    public string UpdateTitle => Update is null ? "" : $"Junction {Update.Version.ToString(3)} is out";
     public string UpdateNotes => Update is null ? "" :
         Update.Notes.Split('\n').Select(l => l.Trim()).Where(l => !l.StartsWith('#'))
             .Select(l => l.TrimStart('-', '*', ' ')).FirstOrDefault(l => l.Length > 0) ?? "A new version is ready.";
@@ -76,12 +76,17 @@ public partial class MainViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(UpdateNotes));
     }
 
-    /// <summary>Path of the running Feevr.exe, or null under `dotnet run` (nothing to replace then).</summary>
+    /// <summary>Path of the running Junction.exe (or a pre-rename Feevr.exe), or null under `dotnet run` (nothing to replace then).</summary>
     static string? InstalledExe => Environment.ProcessPath is { } p &&
-        Path.GetFileNameWithoutExtension(p).Equals("Feevr", StringComparison.OrdinalIgnoreCase) ? p : null;
+        Updater.ExeNames.Contains(Path.GetFileNameWithoutExtension(p), StringComparer.OrdinalIgnoreCase) ? p : null;
 
     bool _refreshing;
     public bool IsRefreshing => _refreshing;
+
+    /// <summary>Something slow is running in the background (mod.io lookup, update download, crash scan). Runs the logo's train.</summary>
+    public bool IsLoading => ModIoBusy || UpdateBusy || Crashes.Busy;
+    partial void OnModIoBusyChanged(bool value) => OnPropertyChanged(nameof(IsLoading));
+    partial void OnUpdateBusyChanged(bool value) => OnPropertyChanged(nameof(IsLoading));
     readonly DispatcherTimer _toastTimer = new() { Interval = TimeSpan.FromSeconds(3.5) };
 
     public MainViewModel(AppState state, bool startTimers = true)
@@ -98,6 +103,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         Performance = new(this);
         Settings = new(this);
         Crashes = new(this);
+        Crashes.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(CrashesViewModel.Busy)) OnPropertyChanged(nameof(IsLoading)); };
         _currentPage = Library;
         _toastTimer.Tick += (_, _) => { Toast = null; _toastTimer.Stop(); };
         _perfTimer.Tick += (_, _) => TickPerf(DateTime.Now);
@@ -176,7 +182,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
         }
         catch (UnauthorizedAccessException)
         {
-            Notify("Feevr can't write to its own folder. Move Feevr.exe somewhere you own, like Documents, and try again.", true);
+            Notify("Junction can't write to its own folder. Move Junction.exe somewhere you own, like Documents, and try again.", true);
         }
         catch (Exception e) when (e is IOException or HttpRequestException or InvalidOperationException or TaskCanceledException)
         {

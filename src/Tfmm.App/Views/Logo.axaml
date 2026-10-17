@@ -2,20 +2,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Tfmm.App.Views.Logo"
              Width="38" Height="38">
-  <!-- An F drawn as a transit line with a station at each of its three ends, drawn like
-       terminus stops on a route map (a ring a bit wider than the line). Keep the top arm longer
-       so it stays an F. 64-unit grid; tools/make_icon.py draws the same shapes. -->
+  <!-- A J drawn as a transit line: a short top arm, a rounded corner, the stem and the hook,
+       with a terminus station at each end (a ring a bit wider than the line, like on a route map).
+       While the app is loading, a train runs along it (Logo.axaml.cs follows the same route).
+       64-unit grid; tools/make_icon.py draws the same shapes. -->
   <Border CornerRadius="9" Background="{StaticResource Accent}">
     <Viewbox>
-      <Canvas Width="64" Height="64">
-        <Path Data="M24,48 V14 H44 M24,30 H37" Stroke="{StaticResource Ink}" StrokeThickness="10"
+      <Canvas x:Name="Board" Width="64" Height="64">
+        <Path Data="M33,15 H39 A6,6 0 0 1 45,21 V37 A13,13 0 0 1 19,37" Stroke="{StaticResource Ink}" StrokeThickness="10"
               StrokeLineCap="Round" StrokeJoin="Round" />
-        <Ellipse Canvas.Left="37.5" Canvas.Top="7.5" Width="13" Height="13" Fill="{StaticResource Ink}" />
-        <Ellipse Canvas.Left="41.1" Canvas.Top="11.1" Width="5.8" Height="5.8" Fill="{StaticResource Accent}" />
-        <Ellipse Canvas.Left="30.5" Canvas.Top="23.5" Width="13" Height="13" Fill="{StaticResource Ink}" />
-        <Ellipse Canvas.Left="34.1" Canvas.Top="27.1" Width="5.8" Height="5.8" Fill="{StaticResource Accent}" />
-        <Ellipse Canvas.Left="17.5" Canvas.Top="41.5" Width="13" Height="13" Fill="{StaticResource Ink}" />
-        <Ellipse Canvas.Left="21.1" Canvas.Top="45.1" Width="5.8" Height="5.8" Fill="{StaticResource Accent}" />
+        <Ellipse Canvas.Left="26.5" Canvas.Top="8.5" Width="13" Height="13" Fill="{StaticResource Ink}" />
+        <Ellipse Canvas.Left="30.1" Canvas.Top="12.1" Width="5.8" Height="5.8" Fill="{StaticResource Accent}" />
+        <Ellipse Canvas.Left="12.5" Canvas.Top="30.5" Width="13" Height="13" Fill="{StaticResource Ink}" />
+        <Ellipse Canvas.Left="16.1" Canvas.Top="34.1" Width="5.8" Height="5.8" Fill="{StaticResource Accent}" />
       </Canvas>
     </Viewbox>
   </Border>

@@ -7,12 +7,15 @@ namespace Tfmm.Core;
 public sealed record UpdateInfo(Version Version, string Tag, string Notes, string PageUrl, string? ExeUrl, string? ShaUrl);
 
 /// <summary>Self-update from GitHub Releases of the public repo. Release tags are "vX.Y.Z" with assets
-/// Feevr.exe and Feevr.exe.sha256 (built by .github/workflows/feevr-release.yml).</summary>
+/// Junction.exe and Junction.exe.sha256 (built by .github/workflows/release.yml). Releases also carry Feevr.exe
+/// for installs from before the rename, whose updater only knows that name.</summary>
 public static class Updater
 {
     public const string Repo = "KINOTheProducer/feevr";
-    public const string ExeAsset = "Feevr.exe";
-    public const string ShaAsset = "Feevr.exe.sha256";
+    public const string ExeAsset = "Junction.exe";
+    public const string ShaAsset = "Junction.exe.sha256";
+    /// <summary>File names (no extension) an installed copy can have. Feevr = installed before the rename and updated in place.</summary>
+    public static readonly string[] ExeNames = ["Junction", "Feevr"];
 
     /// <summary>App version from the assembly (set by -p:Version in the release build; 0.0.0 for local builds).</summary>
     public static Version Current(Assembly asm)
@@ -58,7 +61,7 @@ public static class Updater
         try
         {
             using var req = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/repos/{Repo}/releases/latest");
-            req.Headers.UserAgent.ParseAdd("Feevr-updater");
+            req.Headers.UserAgent.ParseAdd("Junction-updater");
             req.Headers.Accept.ParseAdd("application/vnd.github+json");
             using var res = await http.SendAsync(req, ct).ConfigureAwait(false);
             if (!res.IsSuccessStatusCode) return null;
@@ -72,10 +75,10 @@ public static class Updater
     /// Returns the downloaded path. Refuses a release without a checksum.</summary>
     public static async Task<string> DownloadAsync(HttpClient http, UpdateInfo u, string dir, CancellationToken ct = default)
     {
-        if (u.ExeUrl is null) throw new InvalidOperationException("This release has no Feevr.exe to download.");
+        if (u.ExeUrl is null) throw new InvalidOperationException("This release has no Junction.exe to download.");
         if (u.ShaUrl is null) throw new InvalidOperationException("This release has no checksum, so it was not installed.");
         var expected = ParseSha(await GetString(http, u.ShaUrl, ct).ConfigureAwait(false));
-        var path = Path.Combine(dir, "Feevr.new.exe");
+        var path = Path.Combine(dir, "Junction.new.exe");
         await using (var src = await GetStream(http, u.ExeUrl, ct).ConfigureAwait(false))
         await using (var dst = File.Create(path))
             await src.CopyToAsync(dst, ct).ConfigureAwait(false);
@@ -90,7 +93,7 @@ public static class Updater
         return path;
     }
 
-    /// <summary>"hash  Feevr.exe" (sha256sum format) or a bare hash.</summary>
+    /// <summary>"hash  Junction.exe" (sha256sum format) or a bare hash.</summary>
     public static string ParseSha(string text)
     {
         var hash = text.Trim().Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "";
@@ -125,7 +128,7 @@ public static class Updater
     static async Task<string> GetString(HttpClient http, string url, CancellationToken ct)
     {
         using var req = new HttpRequestMessage(HttpMethod.Get, url);
-        req.Headers.UserAgent.ParseAdd("Feevr-updater");
+        req.Headers.UserAgent.ParseAdd("Junction-updater");
         using var res = await http.SendAsync(req, ct).ConfigureAwait(false);
         res.EnsureSuccessStatusCode();
         return await res.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -134,7 +137,7 @@ public static class Updater
     static async Task<Stream> GetStream(HttpClient http, string url, CancellationToken ct)
     {
         var req = new HttpRequestMessage(HttpMethod.Get, url);
-        req.Headers.UserAgent.ParseAdd("Feevr-updater");
+        req.Headers.UserAgent.ParseAdd("Junction-updater");
         var res = await http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct).ConfigureAwait(false);
         res.EnsureSuccessStatusCode();
         return await res.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);

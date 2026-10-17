@@ -7,13 +7,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <AssemblyName>Feevr</AssemblyName>
+    <AssemblyName>Junction</AssemblyName>
     <RootNamespace>Tfmm.App</RootNamespace>
-    <Product>Feevr</Product>
+    <Product>Junction</Product>
     <!-- Release builds override with -p:Version=X.Y.Z from the tag; the updater compares against it. -->
     <Version>0.0.0</Version>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    <ApplicationIcon>Assets\feevr.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\junction.ico</ApplicationIcon>
   </PropertyGroup>
 
   <!-- `dotnet publish -c Release -r win-x64` gives one ~21 MB exe, no .NET install needed. -->
@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\Fonts\*.ttf" />
-    <AvaloniaResource Include="Assets\feevr.ico" />
+    <AvaloniaResource Include="Assets\junction.ico" />
   </ItemGroup>
 
   <ItemGroup>

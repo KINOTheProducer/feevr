@@ -1,9 +1,10 @@
-"""Draws the Feevr mark (same shapes as src/Tfmm.App/Views/Logo.axaml) to PNG + ICO.
+"""Draws the Junction mark (same shapes as src/Tfmm.App/Views/Logo.axaml) to PNG + ICO.
 
-The mark: an F drawn as a transit line with a terminus station (a ring a bit wider than
-the line, like on a route map) at each of its three ends. Ink on an orange tile, 64-unit grid.
+The mark: a J drawn as a transit line (top arm, rounded corner, stem, hook) with a terminus
+station (a ring a bit wider than the line, like on a route map) at each end. Ink on an orange
+tile, 64-unit grid. The icon has no train; that only runs in the app while it loads.
 
-Usage: python3 tools/make_icon.py   (needs Pillow). Writes src/Tfmm.App/Assets/feevr.ico and feevr-256.png.
+Usage: python3 tools/make_icon.py   (needs Pillow). Writes src/Tfmm.App/Assets/junction.ico and junction-256.png.
 """
 import os
 from PIL import Image, ImageDraw
@@ -34,10 +35,16 @@ def draw(size):
     def circle(cx, cy, r, fill):
         d.ellipse((*P(cx - r, cy - r), *P(cx + r, cy + r)), fill=fill)
 
-    seg(24, 48, 24, 14, 10)       # stem
-    seg(24, 14, 44, 14, 10)       # top line
-    seg(24, 30, 37, 30, 10)       # middle line
-    for cx, cy in ((44, 14), (37, 30), (24, 48)):  # terminus stations: ring a bit wider than the line
+    def arc(cx, cy, r, start, end, w):
+        # PIL angles: 0 = east, clockwise (y points down), stroke grows inward from the box
+        o = r + w / 2
+        d.arc((*P(cx - o, cy - o), *P(cx + o, cy + o)), start, end, fill=INK, width=round(w * k))
+
+    seg(33, 15, 39, 15, 10)       # top arm
+    arc(39, 21, 6, 270, 360, 10)  # corner
+    seg(45, 21, 45, 37, 10)       # stem
+    arc(32, 37, 13, 0, 180, 10)   # hook
+    for cx, cy in ((33, 15), (19, 37)):  # terminus stations: ring a bit wider than the line
         circle(cx, cy, 6.5, INK)
         circle(cx, cy, 2.9, ACCENT)
     return im.resize((size, size), Image.LANCZOS)
@@ -46,6 +53,6 @@ def draw(size):
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     big = draw(256)
-    big.save(os.path.join(OUT, "feevr-256.png"))
-    big.save(os.path.join(OUT, "feevr.ico"), sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
+    big.save(os.path.join(OUT, "junction-256.png"))
+    big.save(os.path.join(OUT, "junction.ico"), sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
     print("wrote", OUT)

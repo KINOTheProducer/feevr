@@ -1,13 +1,13 @@
 name: Release
 
 # Every push to main that changes the app publishes a new release, bumping the last
-# version number (0.1.0, 0.1.1, 0.1.2 ...). Feevr installs pick it up on their own.
+# version number (0.1.0, 0.1.1, 0.1.2 ...). Junction installs pick it up on their own.
 # Run it by hand from the Actions tab to set a version yourself (e.g. 0.2.0).
 
 on:
   push:
     branches: [main]
-    paths: ["src/**", "tests/**", "Feevr.slnx"]
+    paths: ["src/**", "tests/**", "Junction.slnx"]
   workflow_dispatch:
     inputs:
       version:
@@ -62,14 +62,20 @@ jobs:
           echo "last=$LAST" >> "$GITHUB_OUTPUT"
 
       - name: Test
-        run: dotnet test Feevr.slnx
+        run: dotnet test Junction.slnx
 
-      - name: Build Feevr.exe
+      - name: Build Junction.exe
         run: dotnet publish src/Tfmm.App -c Release -r win-x64 -p:Version=${{ steps.v.outputs.version }} -o out
 
+      # Copies from before the rename (Feevr.exe) only look for a Feevr.exe asset. Ship the same
+      # binary under that name too so they still update; once updated they look for Junction.exe.
       - name: Checksum
         working-directory: out
-        run: sha256sum Feevr.exe > Feevr.exe.sha256 && cat Feevr.exe.sha256
+        run: |
+          cp Junction.exe Feevr.exe
+          sha256sum Junction.exe > Junction.exe.sha256
+          sha256sum Feevr.exe > Feevr.exe.sha256
+          cat Junction.exe.sha256 Feevr.exe.sha256
 
       - name: Release notes
         env:
@@ -77,9 +83,9 @@ jobs:
         run: |
           RANGE="${LAST:+$LAST..}HEAD"
           {
-            git log --no-merges --format='- %s' $RANGE -- src tests Feevr.slnx | head -n 30
-            printf '\n%s\n' "Download Feevr.exe and run it. No install needed."
-            printf '%s\n' "Already have Feevr? It offers this update by itself when you open it."
+            git log --no-merges --format='- %s' $RANGE -- src tests Junction.slnx | head -n 30
+            printf '\n%s\n' "Download Junction.exe and run it. No install needed."
+            printf '%s\n' "Already have Junction (or Feevr)? It offers this update by itself when you open it."
           } > notes.md
           cat notes.md
 
@@ -88,5 +94,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           V: ${{ steps.v.outputs.version }}
         run: |
-          gh release create "v$V" out/Feevr.exe out/Feevr.exe.sha256 \
-            --target "$GITHUB_SHA" --title "Feevr $V" --notes-file notes.md --latest
+          gh release create "v$V" out/Junction.exe out/Junction.exe.sha256 out/Feevr.exe out/Feevr.exe.sha256 \
+            --target "$GITHUB_SHA" --title "Junction $V" --notes-file notes.md --latest

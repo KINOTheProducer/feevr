@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Tfmm.App;
 using Tfmm.App.ViewModels;
 using Tfmm.App.Views;
@@ -166,7 +167,7 @@ public class UiTests
         Assert.Equal("v0.0.0", vm.AppVersionText);  // local builds; releases stamp the tag's version
         vm.Update = new UpdateInfo(new Version(0, 2, 0), "v0.2.0", "## What's new\n- Faster live charts\n- Fixes", "https://github.com/KINOTheProducer/feevr/releases/tag/v0.2.0", null, null);
         Assert.True(vm.HasUpdate);
-        Assert.Equal("Feevr 0.2.0 is out", vm.UpdateTitle);
+        Assert.Equal("Junction 0.2.0 is out", vm.UpdateTitle);
         Assert.Equal("Faster live charts", vm.UpdateNotes);  // headings skipped
         Shot(w, "6-update-banner");
         vm.DismissUpdateCommand.Execute(null);
@@ -194,7 +195,7 @@ public class UiTests
     [AvaloniaFact]
     public void ModIoNamesAndLink()
     {
-        var root = Directory.CreateTempSubdirectory("feevr-ui-").FullName;
+        var root = Directory.CreateTempSubdirectory("junction-ui-").FullName;
         try
         {
             var mods = Path.Combine(root, "mod.io", "10640", "mods");
@@ -259,6 +260,29 @@ public class UiTests
 
         vm.Crashes.Selected = vm.Crashes.Items.Single(i => i.Title == "Clean run");
         Assert.Empty(vm.Crashes.Detail!.Suspects);
+        w.Close();
+    }
+
+    [AvaloniaFact]
+    public void LogoTrainRunsWhileLoading()
+    {
+        var (w, vm) = Open();
+        var logo = w.GetVisualDescendants().OfType<Logo>().Single();
+        var cars = logo.GetVisualDescendants().OfType<Avalonia.Controls.Shapes.Rectangle>().ToList();
+        Assert.Equal(3, cars.Count);
+        Assert.False(logo.Loading);
+        Assert.All(cars, c => Assert.False(c.IsVisible));
+
+        vm.ModIoBusy = true;
+        Assert.True(logo.Loading);
+        Assert.True(logo.Draw(0.7));  // mid-route, rounding the hook
+        Assert.All(cars, c => Assert.True(c.IsVisible));
+        Shot(w, "5-logo-loading");
+
+        Assert.False(logo.Draw(5));  // run over: off the track
+        Assert.All(cars, c => Assert.False(c.IsVisible));
+        vm.ModIoBusy = false;
+        Assert.False(logo.Loading);
         w.Close();
     }
 }

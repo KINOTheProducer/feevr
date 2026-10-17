@@ -129,7 +129,7 @@
             </Border>
             <StackPanel IsVisible="{Binding NoSessions}" Margin="18,26" Spacing="6">
               <TextBlock Text="No sessions recorded yet" Classes="h3" />
-              <TextBlock Text="Keep Feevr open and start the game. Each play session is saved here with the playset you used." Classes="muted2 small" TextWrapping="Wrap" />
+              <TextBlock Text="Keep Junction open and start the game. Each play session is saved here with the playset you used." Classes="muted2 small" TextWrapping="Wrap" />
             </StackPanel>
             <ListBox Classes="rows" ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}" MaxHeight="340" AutoScrollToSelectedItem="False">
               <ListBox.ItemTemplate>

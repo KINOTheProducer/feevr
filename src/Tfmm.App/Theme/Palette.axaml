@@ -1,9 +1,9 @@
 <ResourceDictionary xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <!-- Departure-board look: ink grounds, signal orange, amber readouts. Mirrors Pal.cs. -->
-  <FontFamily x:Key="BodyFont">avares://Feevr/Assets/Fonts#Barlow</FontFamily>
-  <FontFamily x:Key="CondFont">avares://Feevr/Assets/Fonts#Barlow Condensed</FontFamily>
-  <FontFamily x:Key="MonoFont">avares://Feevr/Assets/Fonts#JetBrains Mono</FontFamily>
+  <FontFamily x:Key="BodyFont">avares://Junction/Assets/Fonts#Barlow</FontFamily>
+  <FontFamily x:Key="CondFont">avares://Junction/Assets/Fonts#Barlow Condensed</FontFamily>
+  <FontFamily x:Key="MonoFont">avares://Junction/Assets/Fonts#JetBrains Mono</FontFamily>
 
   <SolidColorBrush x:Key="Bg" Color="#0B0D10" />
   <SolidColorBrush x:Key="Side" Color="#08090C" />
