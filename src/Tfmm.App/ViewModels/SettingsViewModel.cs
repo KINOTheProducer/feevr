@@ -32,6 +32,8 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty] private string _modIoKey = "";
     [ObservableProperty] private string _crashDir = "";
     [ObservableProperty] private string _crashDirHint = "";
+    [ObservableProperty] private string _gameSettings = "";
+    [ObservableProperty] private string _gameSettingsHint = "";
     [ObservableProperty] private string _modIoState = "";
     public MainViewModel Main => _main;
     public string Home => _main.State.Home;
@@ -66,6 +68,8 @@ public partial class SettingsViewModel : ObservableObject
         ModIoKey = _main.State.Config.ModIoApiKey;
         CrashDir = _main.State.Config.CrashDir;
         CrashDirHint = CrashLogs.DefaultDirs().FirstOrDefault() ?? @"[STEAM]\userdata\[ID]\3493540\local\crash_dump";
+        GameSettings = _main.State.Config.GameSettings;
+        GameSettingsHint = Tfmm.Core.GameSettings.DefaultFiles().FirstOrDefault() ?? @"[STEAM]\userdata\[ID]\3493540\local\settings.lua";
         _loading = false;
         var mods = _main.State.ModIoMods.ToList();
         var named = mods.Count(m => !m.NameGuessed);
@@ -80,6 +84,7 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnAutoUpdateChanged(bool value) => Save(c => c.AutoUpdate = value);
     partial void OnModIoKeyChanged(string value) => Save(c => c.ModIoApiKey = value.Trim());
     partial void OnCrashDirChanged(string value) => Save(c => c.CrashDir = value.Trim());
+    partial void OnGameSettingsChanged(string value) => Save(c => c.GameSettings = value.Trim());
     partial void OnProbeFileChanged(string value)
     {
         Save(c => c.ProbeFile = value.Trim());

@@ -23,6 +23,8 @@ public sealed class Config
     public string ModIoApiKey { get; set; } = "";
     /// <summary>Folder with the game's stdout/crash logs. Empty = look in the usual places.</summary>
     public string CrashDir { get; set; } = "";
+    /// <summary>The game's settings.lua, where Launch writes the active playset. Empty = find it in Steam's userdata.</summary>
+    public string GameSettings { get; set; } = "";
 }
 
 /// <summary>Source-generated so the app can be trimmed.</summary>
@@ -240,6 +242,27 @@ public sealed partial class AppState
         ps.Mods.AddRange(added);
         SavePlayset(ps);
         return added.Count;
+    }
+
+    public string? GameSettingsFile() =>
+        Config.GameSettings.Trim() is { Length: > 0 } f ? f : Tfmm.Core.GameSettings.DefaultFiles().FirstOrDefault();
+
+    public bool GameRunning() =>
+        GameProcessNames().SelectMany(n => Process.GetProcessesByName(Path.GetFileNameWithoutExtension(n))).Any();
+
+    /// <summary>Puts the active playset's mods, in load order, on the game's New Game screen.
+    /// Returns how many mods it wrote, or null when there is no active playset.</summary>
+    public int? WriteActivePlayset()
+    {
+        if (Active is not { } ps) return null;
+        var file = GameSettingsFile();
+        if (file is null || !File.Exists(file))
+            throw new InvalidOperationException("Can't find the game's settings.lua. Start the game once, or set its path in Settings.");
+        // the game rewrites settings.lua when it quits, which would undo this
+        if (GameRunning()) throw new InvalidOperationException("Close Transport Fever 3 first so it doesn't overwrite the playset.");
+        var order = Check(ps).Order;
+        Tfmm.Core.GameSettings.WriteActiveMods(file, order);
+        return order.Count;
     }
 
     public void Launch()
