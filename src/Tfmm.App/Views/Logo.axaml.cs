@@ -16,9 +16,8 @@ public partial class Logo : UserControl
     // The route in Logo.axaml, as pieces in order: lines (x1, y1, x2, y2) and arcs (cx, cy, r, from°, to°; y points down).
     static readonly Piece[] Route =
     [
-        Piece.Line(33, 15, 39, 15),
-        Piece.Arc(39, 21, 6, -90, 0),
-        Piece.Line(45, 21, 45, 37),
+        Piece.Line(33, 15, 45, 15),
+        Piece.Line(45, 15, 45, 37),
         Piece.Arc(32, 37, 13, 0, 180),
     ];
     static readonly double RouteLength = Route.Sum(p => p.Length);
@@ -94,10 +93,13 @@ public partial class Logo : UserControl
             // Only on the track: cars enter at the top station and leave at the bottom one.
             car.IsVisible = mid >= CarLength / 2 && mid <= RouteLength - CarLength / 2;
             if (!car.IsVisible) continue;
-            var (x, y, angle) = At(mid);
+            var (x, y) = At(mid);
+            // Heading from the car's two ends, so it swings round the corner instead of snapping.
+            var (bx, by) = At(mid - CarLength / 2);
+            var (fx, fy) = At(mid + CarLength / 2);
             Canvas.SetLeft(car, x - CarLength / 2);
             Canvas.SetTop(car, y - CarWidth / 2);
-            ((RotateTransform)car.RenderTransform!).Angle = angle;
+            ((RotateTransform)car.RenderTransform!).Angle = Math.Atan2(fy - by, fx - bx) * 180 / Math.PI;
         }
         return head <= RouteLength + TrainLength;
     }
@@ -107,8 +109,8 @@ public partial class Logo : UserControl
         foreach (var c in _cars) c.IsVisible = false;
     }
 
-    /// <summary>Point and heading (degrees) at distance <paramref name="s"/> along the route.</summary>
-    static (double X, double Y, double Angle) At(double s)
+    /// <summary>Point at distance <paramref name="s"/> along the route.</summary>
+    static (double X, double Y) At(double s)
     {
         foreach (var p in Route)
         {
@@ -125,16 +127,15 @@ public partial class Logo : UserControl
 
         public double Length => IsArc ? C * Math.Abs(E - D) * Math.PI / 180 : Math.Sqrt((C - A) * (C - A) + (D - B) * (D - B));
 
-        public (double, double, double) At(double s)
+        public (double, double) At(double s)
         {
             if (!IsArc)
             {
                 var f = Length == 0 ? 0 : s / Length;
-                return (A + (C - A) * f, B + (D - B) * f, Math.Atan2(D - B, C - A) * 180 / Math.PI);
+                return (A + (C - A) * f, B + (D - B) * f);
             }
-            var deg = D + Math.Sign(E - D) * s / C * 180 / Math.PI;
-            var rad = deg * Math.PI / 180;
-            return (A + C * Math.Cos(rad), B + C * Math.Sin(rad), deg + Math.Sign(E - D) * 90);
+            var rad = (D + Math.Sign(E - D) * s / C * 180 / Math.PI) * Math.PI / 180;
+            return (A + C * Math.Cos(rad), B + C * Math.Sin(rad));
         }
     }
 }

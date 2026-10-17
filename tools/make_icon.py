@@ -1,6 +1,6 @@
 """Draws the Junction mark (same shapes as src/Tfmm.App/Views/Logo.axaml) to PNG + ICO.
 
-The mark: a J drawn as a transit line (top arm, rounded corner, stem, hook) with a terminus
+The mark: a J drawn as a transit line (top arm, square corner, stem, hook) with a terminus
 station (a ring a bit wider than the line, like on a route map) at each end. Ink on an orange
 tile, 64-unit grid. The icon has no train; that only runs in the app while it loads.
 
@@ -40,9 +40,9 @@ def draw(size):
         o = r + w / 2
         d.arc((*P(cx - o, cy - o), *P(cx + o, cy + o)), start, end, fill=INK, width=round(w * k))
 
-    seg(33, 15, 39, 15, 10)       # top arm
-    arc(39, 21, 6, 270, 360, 10)  # corner
-    seg(45, 21, 45, 37, 10)       # stem
+    seg(33, 15, 45, 15, 10)       # top arm
+    seg(45, 15, 45, 37, 10)       # stem
+    d.rectangle((*P(40, 10), *P(50, 20)), fill=INK)  # square off the corner
     arc(32, 37, 13, 0, 180, 10)   # hook
     for cx, cy in ((33, 15), (19, 37)):  # terminus stations: ring a bit wider than the line
         circle(cx, cy, 6.5, INK)
