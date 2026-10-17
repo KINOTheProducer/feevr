@@ -277,7 +277,6 @@ public class UiTests
         Assert.True(logo.Loading);
         Assert.True(logo.Draw(0.7));  // mid-route, rounding the hook
         Assert.All(cars, c => Assert.True(c.IsVisible));
-        Shot(w, "5-logo-loading");
 
         Assert.False(logo.Draw(5));  // run over: off the track
         Assert.All(cars, c => Assert.False(c.IsVisible));

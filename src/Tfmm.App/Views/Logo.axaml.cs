@@ -16,9 +16,8 @@ public partial class Logo : UserControl
     // The route in Logo.axaml, as pieces in order: lines (x1, y1, x2, y2) and arcs (cx, cy, r, from°, to°; y points down).
     static readonly Piece[] Route =
     [
-        Piece.Line(33, 15, 45, 15),
-        Piece.Line(45, 15, 45, 37),
-        Piece.Arc(32, 37, 13, 0, 180),
+        Piece.Line(45, 14, 45, 38),
+        Piece.Arc(32, 38, 13, 0, 180),
     ];
     static readonly double RouteLength = Route.Sum(p => p.Length);
 
@@ -94,7 +93,7 @@ public partial class Logo : UserControl
             car.IsVisible = mid >= CarLength / 2 && mid <= RouteLength - CarLength / 2;
             if (!car.IsVisible) continue;
             var (x, y) = At(mid);
-            // Heading from the car's two ends, so it swings round the corner instead of snapping.
+            // Heading from the car's two ends, so it follows the curve smoothly.
             var (bx, by) = At(mid - CarLength / 2);
             var (fx, fy) = At(mid + CarLength / 2);
             Canvas.SetLeft(car, x - CarLength / 2);
