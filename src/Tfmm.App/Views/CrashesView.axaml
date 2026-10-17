@@ -1,0 +1,184 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Tfmm.App.ViewModels"
+             x:Class="Tfmm.App.Views.CrashesView"
+             x:DataType="vm:CrashesViewModel">
+
+  <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="360,20,*" Margin="32,26,32,24">
+
+    <!-- Header -->
+    <Grid Grid.ColumnSpan="3" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,20">
+      <StackPanel Spacing="2" VerticalAlignment="Bottom">
+        <TextBlock Text="CRASHES" Classes="eyebrow" />
+        <TextBlock Text="Incident log" Classes="h1" />
+      </StackPanel>
+      <Button Grid.Column="1" VerticalAlignment="Bottom" MinHeight="42" Command="{Binding OpenLogFolderCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Data="{StaticResource IconFolder}" Width="15" Height="15" />
+          <TextBlock Text="Log folder" />
+        </StackPanel>
+      </Button>
+      <Button Grid.Column="2" Margin="10,0,0,0" VerticalAlignment="Bottom" MinHeight="42" Command="{Binding RefreshCommand}" IsEnabled="{Binding !Busy}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+          <TextBlock Text="Rescan" />
+        </StackPanel>
+      </Button>
+    </Grid>
+
+    <!-- Departure board -->
+    <Border Grid.Row="1" Grid.ColumnSpan="3" CornerRadius="14" Background="{StaticResource Line}" BorderBrush="{StaticResource Line}" BorderThickness="1" ClipToBounds="True" Margin="0,0,0,18">
+      <Grid ColumnDefinitions="*,*,2*">
+        <Border Background="#101318" Padding="18,14" Margin="0,0,1,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="CRASHES ON FILE" Classes="caption" Foreground="{StaticResource Faint}" />
+            <TextBlock Text="{Binding CrashCount}" Classes="stat" Foreground="{StaticResource ErrText}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Background="#101318" Padding="18,14" Margin="0,0,1,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="LAST CRASH" Classes="caption" Foreground="{StaticResource Faint}" />
+            <TextBlock Text="{Binding LastCrash}" Classes="stat" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Background="#101318" Padding="18,14">
+          <StackPanel Spacing="4">
+            <TextBlock Text="MOST BLAMED" Classes="caption" Foreground="{StaticResource Faint}" />
+            <TextBlock Text="{Binding TopSuspect}" Classes="stat" Foreground="{StaticResource Amber}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
+    <!-- Log list -->
+    <Border Grid.Row="2" Classes="panel" ClipToBounds="True">
+      <Grid RowDefinitions="Auto,*">
+        <Border Classes="head" Padding="16,10">
+          <TextBlock Text="LOGS · NEWEST FIRST" Classes="caption" />
+        </Border>
+        <ListBox Grid.Row="1" Classes="rows" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CrashItem">
+              <Panel>
+                <Rectangle Classes="selbar" IsVisible="{Binding $parent[ListBoxItem].IsSelected}" />
+                <Border Classes="row" Padding="16,12">
+                  <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto">
+                    <Border Width="8" Height="8" CornerRadius="2" Background="{Binding Dot}" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <Grid Grid.Column="1" ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding Title}" Classes="name" Foreground="{Binding Fg}" />
+                      <TextBlock Grid.Column="1" Text="{Binding TimeText}" Classes="mono" Foreground="{StaticResource Muted2}" />
+                    </Grid>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Headline}" FontSize="13" Margin="0,4,0,0" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Sub}" Classes="mono" FontSize="11.5" Foreground="{StaticResource Faint}" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                </Border>
+              </Panel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="1" IsVisible="{Binding IsEmpty}" VerticalAlignment="Center" Margin="24" Spacing="8">
+          <TextBlock Text="No game logs found" Classes="h3" />
+          <TextBlock Text="Feevr looked in:" Classes="muted2 small" />
+          <TextBlock Text="{Binding WhereText}" Classes="mono" FontSize="11.5" Foreground="{StaticResource Faint2}" TextWrapping="Wrap" />
+          <TextBlock Text="Play once, or set the log folder in Settings." Classes="muted2 small" TextWrapping="Wrap" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Detail -->
+    <Border Grid.Row="2" Grid.Column="2" Classes="card" ClipToBounds="True"
+            IsVisible="{Binding Detail, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <ScrollViewer DataContext="{Binding Detail}" x:DataType="vm:CrashDetail">
+        <StackPanel>
+          <Border Classes="head" Padding="22,20,22,18">
+            <StackPanel Spacing="10">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border CornerRadius="6" Padding="9,3" Background="{Binding Item.Dot}">
+                  <TextBlock Text="{Binding Item.Title}" FontSize="12" FontWeight="Bold" Foreground="{StaticResource Ink}" />
+                </Border>
+                <TextBlock Text="{Binding Facts}" Classes="mono" FontSize="12" Foreground="{StaticResource Muted2}" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock Text="{Binding Item.Headline}" Classes="h2" TextWrapping="Wrap" LineHeight="30" />
+              <SelectableTextBlock Text="{Binding Report.Path}" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Foreground="{StaticResource Faint2}" TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                <Button Command="{Binding $parent[UserControl].((vm:CrashesViewModel)DataContext).OpenLogCommand}">
+                  <TextBlock Text="Open log" />
+                </Button>
+                <Button Command="{Binding $parent[UserControl].((vm:CrashesViewModel)DataContext).CopyReportCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconCopy}" Width="14" Height="14" />
+                    <TextBlock Text="Copy summary" />
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Suspects -->
+          <Border Classes="head" Padding="22,16" IsVisible="{Binding HasSuspects}">
+            <StackPanel Spacing="10">
+              <TextBlock Text="SUSPECTS" Classes="caption" />
+              <ItemsControl ItemsSource="{Binding Suspects}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SuspectRow">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,4">
+                      <Border Width="40" Height="40" CornerRadius="20" BorderThickness="3" BorderBrush="{Binding Ring}" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding Mono}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                        <TextBlock FontSize="12" Foreground="{StaticResource Muted2}"><Run Text="{Binding Why}" /><Run Text=" · " /><Run Text="{Binding StateText}" /></TextBlock>
+                      </StackPanel>
+                      <Button Grid.Column="2" Classes="ghost" Margin="8,0,0,0" IsVisible="{Binding Installed}"
+                              Command="{Binding $parent[UserControl].((vm:CrashesViewModel)DataContext).ShowInLibraryCommand}" CommandParameter="{Binding}">
+                        <TextBlock Text="View" />
+                      </Button>
+                      <Button Grid.Column="3" Classes="primary" Margin="8,0,0,0" IsVisible="{Binding Enabled}"
+                              Command="{Binding $parent[UserControl].((vm:CrashesViewModel)DataContext).DisableCommand}" CommandParameter="{Binding}">
+                        <TextBlock Text="Turn off" FontWeight="Bold" />
+                      </Button>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Text="Blame is a guess from which mods the errors name. Turn one off, play again, and see if the crash goes away."
+                         FontSize="12.5" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <!-- Errors -->
+          <StackPanel Margin="22,16" Spacing="12" IsVisible="{Binding HasErrors}">
+            <TextBlock Text="ERRORS" Classes="caption" />
+            <ItemsControl ItemsSource="{Binding Errors}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="12" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ErrorRow">
+                  <Grid ColumnDefinitions="Auto,*">
+                    <Border CornerRadius="5" Padding="7,2" Background="{Binding StampBg}" VerticalAlignment="Top" Margin="0,1,10,0" MinWidth="50">
+                      <TextBlock Text="{Binding Stamp}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="12" LetterSpacing="0.8" Foreground="{Binding StampFg}" HorizontalAlignment="Center" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                      <SelectableTextBlock Text="{Binding Message}" FontFeatures="-calt" FontFamily="{StaticResource MonoFont}" FontSize="12.5" TextWrapping="Wrap" />
+                      <TextBlock Text="{Binding Meta}" FontSize="12" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
+                      <Border CornerRadius="8" Background="#0B0D10" Padding="10,8" IsVisible="{Binding HasTrace}">
+                        <SelectableTextBlock Text="{Binding Trace}" FontFeatures="-calt" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Foreground="{StaticResource Faint2}" TextWrapping="Wrap" />
+                      </Border>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+
+          <!-- Tail -->
+          <StackPanel Margin="22,4,22,22" Spacing="8">
+            <TextBlock Text="LAST LINES" Classes="caption" />
+            <Border CornerRadius="8" Background="#0B0D10" Padding="12,10">
+              <SelectableTextBlock Text="{Binding Tail}" FontFeatures="-calt" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
+            </Border>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

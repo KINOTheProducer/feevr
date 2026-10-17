@@ -1,0 +1,195 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Tfmm.App.ViewModels"
+             x:Class="Tfmm.App.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="32,26,32,32" Spacing="22" MaxWidth="940" HorizontalAlignment="Left">
+      <StackPanel Spacing="6">
+        <TextBlock Text="SETTINGS" Classes="eyebrow" />
+        <TextBlock Text="Point us at your mods." Classes="h1" FontSize="48" LineHeight="48" />
+        <TextBlock Text="Feevr reads the same three places Transport Fever 3 does. When a mod sits in more than one, the game uses the copy higher on this list."
+                   Classes="body" FontSize="15" TextWrapping="Wrap" MaxWidth="640" HorizontalAlignment="Left" />
+      </StackPanel>
+
+      <!-- 01 folders -->
+      <Border Classes="panel" ClipToBounds="True">
+        <StackPanel>
+          <Border Classes="head" Padding="22,18">
+            <StackPanel Orientation="Horizontal" Spacing="14">
+              <Border Width="34" Height="34" CornerRadius="17" BorderThickness="3" BorderBrush="{StaticResource Accent}">
+                <TextBlock Text="01" FontFamily="{StaticResource MonoFont}" FontSize="12.5" Foreground="{StaticResource AccentText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Mod folders" Classes="h3" FontSize="24" VerticalAlignment="Center" />
+            </StackPanel>
+          </Border>
+          <ItemsControl ItemsSource="{Binding Groups}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:SourceGroup">
+                <Border Classes="row" Padding="22,16">
+                  <Grid ColumnDefinitions="48,*,Auto">
+                    <TextBlock Text="{Binding Rank}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="13" LetterSpacing="1" Foreground="{StaticResource Faint}" Margin="0,3,0,0" />
+                    <StackPanel Grid.Column="1" Spacing="5">
+                      <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" />
+                        <Border Classes="tag"><TextBlock Text="{Binding Chip}" /></Border>
+                      </StackPanel>
+                      <TextBlock Text="{Binding Blurb}" FontSize="13" Foreground="{StaticResource Muted2}" />
+                      <TextBlock Text="Not set" Classes="mono" FontSize="12" Foreground="{StaticResource Dim}" IsVisible="{Binding IsEmpty}" />
+                      <ItemsControl ItemsSource="{Binding Folders}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="x:String">
+                            <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2,0,0">
+                              <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" Foreground="{StaticResource Accent}" Margin="0,0,8,0" />
+                              <TextBlock Grid.Column="1" Text="{Binding}" Classes="mono" FontSize="12" Foreground="{StaticResource Text2}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                              <Button Grid.Column="2" Classes="ghost icon danger" Width="30" MinHeight="30" ToolTip.Tip="Remove" AutomationProperties.Name="Remove folder"
+                                      Command="{Binding $parent[ItemsControl].((vm:SourceGroup)DataContext).RemoveCommand}" CommandParameter="{Binding}">
+                                <PathIcon Data="{StaticResource IconClose}" Width="12" Height="12" />
+                              </Button>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                    <Button Grid.Column="2" VerticalAlignment="Top" Click="AddFolder_Click" Tag="{Binding}">
+                      <StackPanel Orientation="Horizontal" Spacing="8">
+                        <PathIcon Data="{StaticResource IconPlus}" Width="14" Height="14" />
+                        <TextBlock Text="Add folder" />
+                      </StackPanel>
+                    </Button>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <!-- mod.io -->
+      <Border Classes="panel" Padding="22,18,22,22">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="mod.io names" Classes="h3" FontSize="24" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Command="{Binding FindModIoCommand}">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
+                <TextBlock Text="Find mod.io folder" />
+              </StackPanel>
+            </Button>
+          </Grid>
+          <TextBlock FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap"
+                     Text="Subscribed mods sit in numbered folders with no name inside. Feevr looks the names, authors and tags up on mod.io with a read-only API key. Get one free at mod.io, My account, API access." />
+          <Grid ColumnDefinitions="*,Auto,Auto">
+            <TextBox Classes="mono" Text="{Binding ModIoKey, UpdateSourceTrigger=LostFocus}" PasswordChar="•" Watermark="mod.io API key"
+                     AutomationProperties.Name="mod.io API key" />
+            <Button Grid.Column="1" Margin="8,0,0,0" MinHeight="42" Command="{Binding OpenModIoKeysCommand}"><TextBlock Text="Get a key" /></Button>
+            <Button Grid.Column="2" Classes="primary" Margin="8,0,0,0" MinHeight="42" Command="{Binding FetchModIoCommand}"
+                    IsEnabled="{Binding !Main.ModIoBusy}"><TextBlock Text="Fetch names" FontWeight="Bold" /></Button>
+          </Grid>
+          <TextBlock Text="{Binding ModIoState}" Classes="mono" FontSize="12" Foreground="{StaticResource Muted2}" />
+        </StackPanel>
+      </Border>
+
+      <!-- 02 launch -->
+      <Border Classes="panel" Padding="22,18,22,22">
+        <StackPanel Spacing="12">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <Border Width="34" Height="34" CornerRadius="17" BorderThickness="3" BorderBrush="{StaticResource Accent}">
+              <TextBlock Text="02" FontFamily="{StaticResource MonoFont}" FontSize="12.5" Foreground="{StaticResource AccentText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="How to start the game" Classes="h3" FontSize="24" VerticalAlignment="Center" />
+          </StackPanel>
+          <TextBlock Text="Steam link or path to the game's .exe, used by Launch game." FontSize="13.5" Foreground="{StaticResource Muted}" />
+          <TextBox Classes="mono" Text="{Binding Launch, UpdateSourceTrigger=LostFocus}" Watermark="steam://rungameid/[TF3 APP ID]" AutomationProperties.Name="Launch command" />
+        </StackPanel>
+      </Border>
+
+      <!-- 03 tracking -->
+      <Border Classes="panel" Padding="22,18,22,22">
+        <StackPanel Spacing="12">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <Border Width="34" Height="34" CornerRadius="17" BorderThickness="3" BorderBrush="{StaticResource Accent}">
+              <TextBlock Text="03" FontFamily="{StaticResource MonoFont}" FontSize="12.5" Foreground="{StaticResource AccentText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <TextBlock Text="Performance tracking" Classes="h3" FontSize="24" VerticalAlignment="Center" />
+          </StackPanel>
+          <TextBlock Text="Game process name. Feevr watches for it and records CPU and memory each second while you play. Separate several names with commas."
+                     FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+          <TextBox Classes="mono" Text="{Binding GameProcess, UpdateSourceTrigger=LostFocus}" Watermark="TransportFever3" AutomationProperties.Name="Game process name" />
+          <TextBlock Text="Probe file. Optional. Written by the Feevr perf probe mod; gives measured per-mod timings."
+                     FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Classes="mono" Text="{Binding ProbeFile, UpdateSourceTrigger=LostFocus}" Watermark="[GAME USERDATA]/feevr/probe.lua" AutomationProperties.Name="Probe file" />
+            <Button Grid.Column="1" Margin="8,0,0,0" MinHeight="42" Click="BrowseProbe_Click"><TextBlock Text="Browse" /></Button>
+          </Grid>
+          <TextBlock Text="{Binding ProbeState}" Classes="mono" FontSize="12" Foreground="{StaticResource Muted2}" />
+          <TextBlock Text="Game log folder. Optional. Feevr finds it on its own for Steam (crash_dump in Steam's userdata) and GOG/Epic. Set it if the Crashes page comes up empty."
+                     FontSize="13.5" Foreground="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,8,0,0" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBox Classes="mono" Text="{Binding CrashDir, UpdateSourceTrigger=LostFocus}" Watermark="{Binding CrashDirHint}" AutomationProperties.Name="Game log folder" />
+            <Button Grid.Column="1" Margin="8,0,0,0" MinHeight="42" Click="BrowseCrashDir_Click"><TextBlock Text="Browse" /></Button>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <!-- 04 updates -->
+      <Border Classes="panel" Padding="22,18,22,22">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Orientation="Horizontal" Spacing="14">
+              <Border Width="34" Height="34" CornerRadius="17" BorderThickness="3" BorderBrush="{StaticResource Accent}">
+                <TextBlock Text="04" FontFamily="{StaticResource MonoFont}" FontSize="12.5" Foreground="{StaticResource AccentText}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Updates" Classes="h3" FontSize="24" VerticalAlignment="Center" />
+            </StackPanel>
+            <TextBlock Grid.Column="1" Text="{Binding Main.AppVersionText}" FontFamily="{StaticResource MonoFont}" FontSize="13" Foreground="{StaticResource Muted2}" VerticalAlignment="Center" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="3">
+              <TextBlock Text="Check for new versions automatically" FontWeight="SemiBold" />
+              <TextBlock Text="Feevr checks GitHub when it starts and every few hours. Updates install with one click and keep your settings, playsets and sessions."
+                         FontSize="13" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
+            </StackPanel>
+            <ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoUpdate}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"
+                          AutomationProperties.Name="Check for updates automatically" />
+          </Grid>
+          <Button HorizontalAlignment="Left" Command="{Binding Main.CheckUpdatesCommand}"><TextBlock Text="Check now" /></Button>
+        </StackPanel>
+      </Border>
+
+      <!-- data folder -->
+      <Border Classes="panel" Padding="22,18">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="3">
+            <TextBlock Text="Data folder" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="Playsets, settings and recorded sessions live here." FontSize="13" Foreground="{StaticResource Muted2}" />
+            <SelectableTextBlock Text="{Binding Home}" FontFamily="{StaticResource MonoFont}" FontSize="12" Foreground="{StaticResource Faint2}" Margin="0,4,0,0" />
+          </StackPanel>
+          <Button Grid.Column="1" VerticalAlignment="Center" Command="{Binding OpenHomeCommand}">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14" />
+              <TextBlock Text="Open" />
+            </StackPanel>
+          </Button>
+        </Grid>
+      </Border>
+
+      <!-- planned -->
+      <Border CornerRadius="16" BorderBrush="{StaticResource Line4}" BorderThickness="1" Padding="22,16">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="2">
+            <TextBlock Text="Sync with the game's own mod list" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="20" Foreground="{StaticResource Muted}" />
+            <TextBlock Text="Not available yet. Playsets live in Feevr until we know where the game keeps its enabled list." FontSize="13" Foreground="{StaticResource Faint}" TextWrapping="Wrap" />
+          </StackPanel>
+          <Border Grid.Column="1" Classes="tag" VerticalAlignment="Center">
+            <TextBlock Text="PLANNED" FontFamily="{StaticResource CondFont}" FontWeight="Bold" LetterSpacing="1.2" />
+          </Border>
+        </Grid>
+      </Border>
+
+      <TextBlock Classes="faint small" TextWrapping="Wrap"
+                 Text="Feevr is a fan-made tool, not affiliated with Urban Games. Fonts: Barlow and JetBrains Mono (SIL OFL)." />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

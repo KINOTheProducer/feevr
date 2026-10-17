@@ -1,0 +1,92 @@
+name: Release
+
+# Every push to main that changes the app publishes a new release, bumping the last
+# version number (0.1.0, 0.1.1, 0.1.2 ...). Feevr installs pick it up on their own.
+# Run it by hand from the Actions tab to set a version yourself (e.g. 0.2.0).
+
+on:
+  push:
+    branches: [main]
+    paths: ["src/**", "tests/**", "Feevr.slnx"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version X.Y.Z. Leave empty to bump the last number."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      INPUT_VERSION: ${{ inputs.version }}
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      DOTNET_NOLOGO: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Work out the version
+        id: v
+        run: |
+          LAST=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          if [ -n "$INPUT_VERSION" ]; then
+            V="${INPUT_VERSION#v}"
+          elif [ -z "$LAST" ]; then
+            V="0.1.0"
+          else
+            IFS=. read -r MA MI PA <<< "${LAST#v}"
+            V="$MA.$MI.$((PA + 1))"
+          fi
+          if ! echo "$V" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version must look like 1.2.3, got '$V'"
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
+            echo "::error::v$V already exists"
+            exit 1
+          fi
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          echo "last=$LAST" >> "$GITHUB_OUTPUT"
+
+      - name: Test
+        run: dotnet test Feevr.slnx
+
+      - name: Build Feevr.exe
+        run: dotnet publish src/Tfmm.App -c Release -r win-x64 -p:Version=${{ steps.v.outputs.version }} -o out
+
+      - name: Checksum
+        working-directory: out
+        run: sha256sum Feevr.exe > Feevr.exe.sha256 && cat Feevr.exe.sha256
+
+      - name: Release notes
+        env:
+          LAST: ${{ steps.v.outputs.last }}
+        run: |
+          RANGE="${LAST:+$LAST..}HEAD"
+          {
+            git log --no-merges --format='- %s' $RANGE -- src tests Feevr.slnx | head -n 30
+            printf '\n%s\n' "Download Feevr.exe and run it. No install needed."
+            printf '%s\n' "Already have Feevr? It offers this update by itself when you open it."
+          } > notes.md
+          cat notes.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.v.outputs.version }}
+        run: |
+          gh release create "v$V" out/Feevr.exe out/Feevr.exe.sha256 \
+            --target "$GITHUB_SHA" --title "Feevr $V" --notes-file notes.md --latest

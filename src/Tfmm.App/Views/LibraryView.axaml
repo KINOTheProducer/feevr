@@ -1,0 +1,272 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Tfmm.App.ViewModels"
+             xmlns:media="using:Avalonia.Media"
+             x:Class="Tfmm.App.Views.LibraryView"
+             x:DataType="vm:LibraryViewModel">
+
+  <Grid RowDefinitions="Auto,Auto,Auto,*" ColumnDefinitions="*,20,380" Margin="32,26,32,24">
+
+    <!-- Header -->
+    <Grid Grid.ColumnSpan="3" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,20">
+      <StackPanel Spacing="2" VerticalAlignment="Bottom">
+        <TextBlock Text="LIBRARY" Classes="eyebrow" />
+        <TextBlock Text="Installed mods" Classes="h1" />
+      </StackPanel>
+      <TextBox Grid.Column="1" Text="{Binding Search}" Watermark="Search name, mod ID or author" Width="320" VerticalAlignment="Bottom"
+               AutomationProperties.Name="Search mods">
+        <TextBox.InnerLeftContent>
+          <PathIcon Data="{StaticResource IconSearch}" Width="15" Height="15" Margin="12,0,0,0" Foreground="{StaticResource Faint}" />
+        </TextBox.InnerLeftContent>
+      </TextBox>
+      <Button Grid.Column="2" Margin="10,0,0,0" VerticalAlignment="Bottom" MinHeight="42"
+              Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).RescanCommand}">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <PathIcon Data="{StaticResource IconRefresh}" Width="15" Height="15" />
+          <TextBlock Text="Rescan" />
+        </StackPanel>
+      </Button>
+    </Grid>
+
+    <!-- Departure board -->
+    <Border Grid.Row="1" Grid.ColumnSpan="3" CornerRadius="14" Background="{StaticResource Line}" BorderBrush="{StaticResource Line}" BorderThickness="1" ClipToBounds="True" Margin="0,0,0,18">
+      <UniformGrid Columns="4">
+        <Border Background="#101318" Padding="18,14" Margin="0,0,1,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="ENABLED" Classes="caption" Foreground="{StaticResource Faint}" />
+            <TextBlock Classes="stat"><Run Text="{Binding EnabledText}" /><Run Text="{Binding InstalledText}" Foreground="{StaticResource Dim}" /></TextBlock>
+          </StackPanel>
+        </Border>
+        <Border Background="#101318" Padding="18,14" Margin="0,0,1,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="PROBLEMS" Classes="caption" Foreground="{StaticResource Faint}" />
+            <TextBlock Text="{Binding ProblemText}" Classes="stat" Foreground="{StaticResource ErrText}" />
+          </StackPanel>
+        </Border>
+        <Border Background="#101318" Padding="18,14" Margin="0,0,1,0">
+          <StackPanel Spacing="4">
+            <TextBlock Text="ON DISK" Classes="caption" Foreground="{StaticResource Faint}" />
+            <TextBlock Classes="stat"><Run Text="{Binding DiskText}" /><Run Text="{Binding DiskUnit}" FontSize="15" Foreground="{StaticResource Dim}" /></TextBlock>
+          </StackPanel>
+        </Border>
+        <Border Background="#101318" Padding="18,14">
+          <StackPanel Spacing="4">
+            <TextBlock Text="PER-TICK SCRIPTS" Classes="caption" Foreground="{StaticResource Faint}" />
+            <TextBlock Text="{Binding TickText}" Classes="stat" />
+          </StackPanel>
+        </Border>
+      </UniformGrid>
+    </Border>
+
+    <!-- Filters -->
+    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <RadioButton Classes="pill" GroupName="libf" Content="{Binding AllLabel}" IsChecked="{Binding FilterAll}" />
+        <RadioButton Classes="pill" GroupName="libf" Content="{Binding EnabledLabel}" IsChecked="{Binding FilterEnabled}" />
+        <RadioButton Classes="pill" GroupName="libf" Content="{Binding IssuesLabel}" IsChecked="{Binding FilterIssues}" />
+      </StackPanel>
+      <ComboBox Grid.Column="1" ItemsSource="{Binding TagOptions}" SelectedItem="{Binding Tag}" MinWidth="150" MinHeight="34" AutomationProperties.Name="Tag" />
+    </Grid>
+
+    <!-- Mod table -->
+    <Border Grid.Row="3" Classes="panel" ClipToBounds="True">
+      <Grid RowDefinitions="Auto,*">
+        <Border Classes="head" Padding="16,10">
+          <Grid ColumnDefinitions="64,52,*,180,120">
+            <TextBlock Text="ON" Classes="caption" />
+            <TextBlock Grid.Column="2" Text="MOD" Classes="caption" />
+            <TextBlock Grid.Column="3" Text="TAGS" Classes="caption" />
+            <TextBlock Grid.Column="4" Text="STATUS" Classes="caption" />
+          </Grid>
+        </Border>
+        <ListBox Grid.Row="1" Classes="rows" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:ModItem">
+              <Panel>
+                <Rectangle Classes="selbar" IsVisible="{Binding $parent[ListBoxItem].IsSelected}" />
+                <Border Classes="row" Padding="16,0">
+                  <Grid ColumnDefinitions="64,52,*,180,120" Height="62">
+                    <ToggleSwitch IsChecked="{Binding IsEnabled}" OnContent="" OffContent="" MinWidth="0" VerticalAlignment="Center"
+                                  AutomationProperties.Name="{Binding Name, StringFormat='Enable {0}'}" />
+                    <Border Grid.Column="1" Classes="mono-tile" HorizontalAlignment="Left">
+                      <TextBlock Text="{Binding Mono}" Foreground="{Binding MonoBrush}" />
+                    </Border>
+                    <StackPanel Grid.Column="2" VerticalAlignment="Center" Spacing="3" Margin="0,0,12,0">
+                      <TextBlock Text="{Binding Name}" Classes="name" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Text="{Binding IdLine}" Classes="mono" Foreground="{StaticResource Faint}" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <ItemsControl Grid.Column="3" ItemsSource="{Binding Tags}" VerticalAlignment="Center">
+                      <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String"><Border Classes="tag"><TextBlock Text="{Binding}" /></Border></DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                      <Border Width="8" Height="8" CornerRadius="2" Background="{Binding StatusDot}" VerticalAlignment="Center" />
+                      <TextBlock Text="{Binding StatusText}" FontSize="13" Foreground="{Binding StatusFg}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </Panel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Grid.Row="1" IsVisible="{Binding IsEmpty}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="6">
+          <TextBlock Text="No mods match" Classes="h3" HorizontalAlignment="Center" />
+          <TextBlock Text="Clear the search, pick another filter, or add a mod folder in Settings." Classes="muted2 small" HorizontalAlignment="Center" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Detail -->
+    <Border Grid.Row="2" Grid.RowSpan="2" Grid.Column="2" Classes="card" ClipToBounds="True"
+            IsVisible="{Binding Detail, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <ScrollViewer DataContext="{Binding Detail}" x:DataType="vm:ModDetail">
+        <StackPanel>
+          <Border Classes="head" Padding="22,20,22,18">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="Auto,*">
+                <Border Classes="mono-tile" Width="52" Height="52" CornerRadius="12" Margin="0,0,14,0">
+                  <TextBlock Text="{Binding Item.Mono}" Foreground="{Binding Item.MonoBrush}" FontSize="20" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                  <TextBlock Text="{Binding Item.Name}" Classes="h2" TextWrapping="Wrap" LineHeight="30" />
+                  <TextBlock Text="{Binding Byline}" FontSize="13" Foreground="{StaticResource Muted2}" />
+                </StackPanel>
+              </Grid>
+              <TextBlock Text="{Binding Summary}" Classes="body" TextWrapping="Wrap" />
+              <ItemsControl ItemsSource="{Binding Badges}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel ItemSpacing="6" LineSpacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:Badge">
+                    <Border CornerRadius="6" Padding="9,3" Background="{Binding Bg}">
+                      <TextBlock Text="{Binding Text}" FontSize="12" FontWeight="SemiBold" Foreground="{Binding Fg}" />
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Grid ColumnDefinitions="*,8,*" Margin="0,4,0,0">
+                <Button Classes="primary" MinHeight="44" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Command="{Binding $parent[UserControl].((vm:LibraryViewModel)DataContext).ToggleSelectedCommand}">
+                  <TextBlock Text="{Binding ToggleText}" FontWeight="Bold" />
+                </Button>
+                <Button Grid.Column="2" MinHeight="44" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Command="{Binding $parent[UserControl].((vm:LibraryViewModel)DataContext).OpenFolderCommand}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconFolder}" Width="15" Height="15" />
+                    <TextBlock Text="Open folder" />
+                  </StackPanel>
+                </Button>
+              </Grid>
+              <Button MinHeight="40" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" IsVisible="{Binding HasProfile}"
+                      Command="{Binding $parent[UserControl].((vm:LibraryViewModel)DataContext).OpenProfileCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource IconArrowRight}" Width="15" Height="15" />
+                  <TextBlock Text="View on mod.io" />
+                </StackPanel>
+              </Button>
+              <TextBlock IsVisible="{Binding NameGuessed}" FontSize="12.5" Foreground="{StaticResource Muted2}" TextWrapping="Wrap"
+                         Text="Name guessed from the mod id. Add a mod.io API key in Settings to get the real one." />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="head" Padding="22,16" IsVisible="{Binding HasIssues}">
+            <StackPanel Spacing="10">
+              <TextBlock Text="NEEDS ATTENTION" Classes="caption" />
+              <ItemsControl ItemsSource="{Binding Issues}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:IssueRow">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <Border Classes="stamp" Background="{Binding StampBg}" Margin="0,2,10,0">
+                        <TextBlock Text="{Binding Stamp}" Foreground="{Binding StampFg}" />
+                      </Border>
+                      <TextBlock Grid.Column="1" Text="{Binding Message}" FontSize="13.5" TextWrapping="Wrap" Foreground="#D3D9E2" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="head" Padding="22,16" IsVisible="{Binding HasDeps}">
+            <StackPanel>
+              <TextBlock Text="ROUTE TO THIS MOD" Classes="caption" Margin="0,0,0,10" />
+              <ItemsControl ItemsSource="{Binding Deps}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:DepRow">
+                    <Grid ColumnDefinitions="22,*,Auto" Height="42">
+                      <Rectangle Width="3" Fill="{StaticResource Accent}" Opacity="0.55" />
+                      <Ellipse Width="14" Height="14" Fill="{StaticResource Card}" Stroke="{Binding Ring}" StrokeThickness="3" />
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0" Spacing="1">
+                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding State}" FontSize="12" Foreground="{StaticResource Muted2}" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="2" Text="{Binding Code}" Classes="mono" FontSize="11" Foreground="{Binding Ring}" VerticalAlignment="Center" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Grid ColumnDefinitions="22,*" Height="40">
+                <Border Width="16" Height="16" CornerRadius="4" Background="{StaticResource Accent}" />
+                <TextBlock Grid.Column="1" Text="{Binding Item.Name}" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0" />
+              </Grid>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="head" Padding="22,16" IsVisible="{Binding HasIncompat}">
+            <StackPanel Spacing="8">
+              <TextBlock Text="CLASHES WITH" Classes="caption" />
+              <ItemsControl ItemsSource="{Binding Incompat}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:DepRow">
+                    <Grid ColumnDefinitions="22,*,Auto" Height="40">
+                      <Ellipse Width="12" Height="12" Stroke="{Binding Ring}" StrokeThickness="3" />
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0" Spacing="1">
+                        <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding State}" FontSize="12" Foreground="{StaticResource Muted2}" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="2" Text="{Binding Code}" Classes="mono" FontSize="11" Foreground="{Binding Ring}" VerticalAlignment="Center" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <StackPanel Margin="22,16,22,20" Spacing="10">
+            <TextBlock Text="FOOTPRINT" Classes="caption" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Cost score" FontSize="13" Foreground="{StaticResource Muted}" VerticalAlignment="Bottom" />
+              <TextBlock Grid.Column="1" Text="{Binding Score}" FontFamily="{StaticResource MonoFont}" FontSize="18" Foreground="{StaticResource Amber}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Meter}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="media:IBrush"><Border Height="10" CornerRadius="2" Margin="0,0,3,0" Background="{Binding}" /></DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="{Binding SizeText}" Classes="mono" Foreground="{StaticResource Muted2}" />
+              <TextBlock Grid.Column="1" Text="{Binding HooksText}" Classes="mono" Foreground="{StaticResource Muted2}" />
+            </Grid>
+            <Border IsVisible="{Binding HasMeasured}" Background="{StaticResource Tag}" CornerRadius="8" Padding="10,8">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconPulse}" Width="14" Height="14" Foreground="{StaticResource AccentText}" />
+                <TextBlock Text="{Binding Measured}" FontSize="12.5" Foreground="{StaticResource Text2}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+            <StackPanel Spacing="4" IsVisible="{Binding HasShadowed}" Margin="0,6,0,0">
+              <TextBlock Text="ALSO INSTALLED (IGNORED)" Classes="caption" />
+              <TextBlock Text="{Binding Shadowed}" Classes="mono" Foreground="{StaticResource Faint2}" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Spacing="4" Margin="0,6,0,0">
+              <TextBlock Text="LOCATION" Classes="caption" />
+              <SelectableTextBlock Text="{Binding Mod.Path}" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Foreground="{StaticResource Faint2}" TextWrapping="Wrap" />
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+  </Grid>
+</UserControl>

@@ -1,0 +1,207 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Tfmm.App.ViewModels"
+             xmlns:media="using:Avalonia.Media"
+             x:Class="Tfmm.App.Views.PlaysetsView"
+             x:DataType="vm:PlaysetsViewModel">
+
+  <Grid ColumnDefinitions="300,*" Margin="32,26,32,24">
+
+    <!-- Tickets -->
+    <DockPanel Margin="0,0,24,0">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+        <StackPanel Spacing="2">
+          <TextBlock Text="PLAYSETS" Classes="eyebrow" />
+          <TextBlock Text="Routes" Classes="h1" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="primary icon" Width="44" MinHeight="44" VerticalAlignment="Bottom" Command="{Binding NewCommand}"
+                ToolTip.Tip="New playset" AutomationProperties.Name="New playset">
+          <PathIcon Data="{StaticResource IconPlus}" Width="18" Height="18" />
+        </Button>
+      </Grid>
+      <ListBox Classes="tickets" ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:PlaysetItem">
+            <Border CornerRadius="14" BorderThickness="1" ClipToBounds="True" Background="{StaticResource Card}" BorderBrush="{StaticResource Line2}">
+              <Panel>
+                <Border BorderBrush="{StaticResource Accent}" BorderThickness="1" CornerRadius="14" Background="#15120F"
+                        IsVisible="{Binding $parent[ListBoxItem].IsSelected}" />
+                <StackPanel>
+                  <StackPanel Margin="16,14,16,10" Spacing="3">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding Name}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="20" TextTrimming="CharacterEllipsis" />
+                      <Border Grid.Column="1" IsVisible="{Binding IsActive}" Background="{StaticResource Accent}" CornerRadius="5" Padding="7,1" VerticalAlignment="Center">
+                        <TextBlock Text="ACTIVE" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="11.5" LetterSpacing="1" Foreground="{StaticResource Ink}" />
+                      </Border>
+                    </Grid>
+                    <TextBlock Text="{Binding Subtitle}" FontSize="12.5" Foreground="{StaticResource Muted}" />
+                  </StackPanel>
+                  <ItemsControl ItemsSource="{Binding Bars}" Margin="16,0,16,14">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="media:IBrush"><Border Height="5" CornerRadius="2" Margin="0,0,4,0" Background="{Binding}" /></DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </Panel>
+            </Border>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </DockPanel>
+
+    <!-- Empty -->
+    <StackPanel Grid.Column="1" IsVisible="{Binding !HasSelection}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="10">
+      <TextBlock Text="No routes yet" Classes="h2" HorizontalAlignment="Center" />
+      <TextBlock Text="A playset is a named list of mods you can switch between." Classes="muted" HorizontalAlignment="Center" />
+      <Button Classes="primary" HorizontalAlignment="Center" Margin="0,8,0,0" Command="{Binding NewCommand}">
+        <TextBlock Text="Create a playset" />
+      </Button>
+    </StackPanel>
+
+    <!-- Selected -->
+    <ScrollViewer Grid.Column="1" IsVisible="{Binding HasSelection}">
+      <StackPanel Spacing="18">
+        <Grid ColumnDefinitions="*,Auto" Margin="0,22,0,0">
+          <StackPanel Spacing="4">
+            <TextBox Classes="title" Text="{Binding Name, UpdateSourceTrigger=LostFocus}" MaxLength="80" AutomationProperties.Name="Playset name" />
+            <TextBlock Text="{Binding LineText}" FontSize="13" Foreground="{StaticResource Muted2}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+            <Button Command="{Binding MakeActiveCommand}" IsVisible="{Binding !IsActive}">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <PathIcon Data="{StaticResource IconStar}" Width="14" Height="14" />
+                <TextBlock Text="Make active" />
+              </StackPanel>
+            </Button>
+            <Button Command="{Binding DuplicateCommand}"><TextBlock Text="Duplicate" /></Button>
+            <Button Classes="icon danger" ToolTip.Tip="Delete" AutomationProperties.Name="Delete playset">
+              <PathIcon Data="{StaticResource IconDelete}" Width="16" Height="16" />
+              <Button.Flyout>
+                <Flyout Placement="BottomEdgeAlignedRight">
+                  <StackPanel Spacing="12" Width="240" Margin="4">
+                    <TextBlock Text="Delete this playset?" Classes="h3" />
+                    <TextBlock Text="Mods stay installed. Only the list is removed." Classes="muted small" TextWrapping="Wrap" />
+                    <Button HorizontalAlignment="Right" Command="{Binding DeleteCommand}" Background="{StaticResource Err}" BorderBrush="{StaticResource Err}">
+                      <TextBlock Text="Delete playset" Foreground="{StaticResource Ink}" FontWeight="Bold" />
+                    </Button>
+                  </StackPanel>
+                </Flyout>
+              </Button.Flyout>
+            </Button>
+          </StackPanel>
+        </Grid>
+
+        <!-- Status strip -->
+        <Border CornerRadius="14" Padding="18,16" BorderThickness="1" Background="{Binding BannerBg}" BorderBrush="{Binding BannerLine}">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border CornerRadius="6" Padding="10,4" Background="{Binding BannerTagBg}" VerticalAlignment="Center" Margin="0,0,16,0">
+              <TextBlock Text="{Binding BannerTag}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="13" LetterSpacing="1.4" Foreground="{StaticResource Ink}" />
+            </Border>
+            <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+              <TextBlock Text="{Binding Headline}" FontWeight="Bold" FontSize="16" />
+              <TextBlock Text="{Binding Subline}" FontSize="13" Foreground="{StaticResource Muted}" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <Button Command="{Binding PruneCommand}" IsVisible="{Binding CanPrune}"><TextBlock Text="Remove missing" /></Button>
+              <Button Classes="primary" MinHeight="44" Command="{Binding FixDepsCommand}" IsVisible="{Binding CanFix}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <PathIcon Data="{StaticResource IconPlus}" Width="15" Height="15" />
+                  <TextBlock Text="{Binding FixText}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- Route map -->
+        <Border Classes="panel" Padding="20,18,20,22">
+          <StackPanel>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+              <TextBlock Text="LOAD ORDER · ROUTE MAP" Classes="caption" />
+              <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Border Width="18" Height="4" CornerRadius="2" Background="{StaticResource Accent}" VerticalAlignment="Center" />
+                  <TextBlock Text="Loads" FontSize="12" Foreground="{StaticResource Muted2}" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <Line StartPoint="0,1" EndPoint="18,1" Stroke="{StaticResource Faint}" StrokeThickness="2" StrokeDashArray="2,2" VerticalAlignment="Center" />
+                  <TextBlock Text="Needed, not enabled" FontSize="12" Foreground="{StaticResource Muted2}" />
+                </StackPanel>
+              </StackPanel>
+            </Grid>
+            <TextBlock IsVisible="{Binding NoStops}" Text="Nothing on this route yet." Classes="muted2" Margin="0,40" HorizontalAlignment="Center" />
+            <ItemsControl ItemsSource="{Binding Stops}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:Stop">
+                  <Grid RowDefinitions="Auto,36,Auto" MinWidth="120" VerticalAlignment="Top">
+                    <!-- spur -->
+                    <Panel Height="{Binding SpurHeight}">
+                    <StackPanel VerticalAlignment="Bottom" HorizontalAlignment="Center" IsVisible="{Binding HasSpur}" Spacing="0">
+                      <TextBlock Text="{Binding Spur}" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource Muted}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="140" />
+                      <TextBlock Text="NOT ENABLED" Classes="mono" FontSize="10.5" Foreground="{StaticResource Warn}" HorizontalAlignment="Center" Margin="0,2,0,6" />
+                      <Ellipse Width="14" Height="14" Stroke="#8C96A6" StrokeThickness="2" StrokeDashArray="2,1.5" Fill="{StaticResource Panel}" HorizontalAlignment="Center" />
+                      <Line StartPoint="1,0" EndPoint="1,22" Stroke="{StaticResource Faint}" StrokeThickness="2" StrokeDashArray="2,2" HorizontalAlignment="Center" />
+                    </StackPanel>
+                    </Panel>
+                    <!-- line + station -->
+                    <Grid Grid.Row="1" ColumnDefinitions="*,*">
+                      <Border Height="6" Background="{StaticResource Accent}" IsVisible="{Binding NotFirst}" />
+                      <Border Grid.Column="1" Height="6" Background="{StaticResource Accent}" IsVisible="{Binding NotLast}" />
+                    </Grid>
+                    <Border Grid.Row="1" Width="26" Height="26" CornerRadius="13" BorderThickness="5" BorderBrush="{StaticResource Accent}" Background="{StaticResource Panel}">
+                      <Ellipse Width="8" Height="8" Fill="{Binding Core}" />
+                    </Border>
+                    <!-- label -->
+                    <StackPanel Grid.Row="2" HorizontalAlignment="Center" Spacing="3" Margin="6,10,6,0">
+                      <TextBlock Text="{Binding Number}" Classes="mono" FontSize="11" Foreground="{StaticResource Faint}" HorizontalAlignment="Center" />
+                      <TextBlock Text="{Binding Name}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="18" TextAlignment="Center" TextWrapping="Wrap" HorizontalAlignment="Center" />
+                      <TextBlock Text="{Binding ModId}" Classes="mono" FontSize="10.5" Foreground="{StaticResource Faint2}" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                      <Border CornerRadius="5" Padding="8,2" Margin="0,4,0,0" Background="{Binding ChipBg}" HorizontalAlignment="Center">
+                        <TextBlock Text="{Binding Chip}" FontSize="11.5" FontWeight="SemiBold" Foreground="{Binding ChipFg}" />
+                      </Border>
+                    </StackPanel>
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <!-- Departure board of issues -->
+        <Border Classes="panel" ClipToBounds="True">
+          <StackPanel>
+            <Border Classes="head" Padding="18,12">
+              <Grid ColumnDefinitions="74,210,*,130">
+                <TextBlock Text="STATUS" Classes="caption" />
+                <TextBlock Grid.Column="1" Text="MOD" Classes="caption" />
+                <TextBlock Grid.Column="2" Text="DETAIL" Classes="caption" />
+                <TextBlock Grid.Column="3" Text="ACTION" Classes="caption" HorizontalAlignment="Right" />
+              </Grid>
+            </Border>
+            <TextBlock IsVisible="{Binding NoIssues}" Text="Nothing to fix. Clear to depart." Foreground="{StaticResource OkText}" Margin="18,18" />
+            <ItemsControl ItemsSource="{Binding Issues}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:IssueRow">
+                  <Border Classes="row" Padding="18,0">
+                    <Grid ColumnDefinitions="74,210,*,130" MinHeight="52">
+                      <Border Classes="stamp" Background="{Binding StampBg}" HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="50" Padding="0,3">
+                        <TextBlock Text="{Binding Stamp}" Foreground="{Binding StampFg}" />
+                      </Border>
+                      <TextBlock Grid.Column="1" Text="{Binding ModName}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+                      <TextBlock Grid.Column="2" Text="{Binding Message}" Foreground="#B5BDC9" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,8,12,8" />
+                      <Button Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center" MinHeight="36" FontSize="13"
+                              IsVisible="{Binding HasFix}" Content="{Binding FixText}"
+                              Command="{Binding $parent[UserControl].((vm:PlaysetsViewModel)DataContext).ApplyFixCommand}" CommandParameter="{Binding}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

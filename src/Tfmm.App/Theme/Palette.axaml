@@ -1,0 +1,74 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Departure-board look: ink grounds, signal orange, amber readouts. Mirrors Pal.cs. -->
+  <FontFamily x:Key="BodyFont">avares://Feevr/Assets/Fonts#Barlow</FontFamily>
+  <FontFamily x:Key="CondFont">avares://Feevr/Assets/Fonts#Barlow Condensed</FontFamily>
+  <FontFamily x:Key="MonoFont">avares://Feevr/Assets/Fonts#JetBrains Mono</FontFamily>
+
+  <SolidColorBrush x:Key="Bg" Color="#0B0D10" />
+  <SolidColorBrush x:Key="Side" Color="#08090C" />
+  <SolidColorBrush x:Key="Panel" Color="#0E1115" />
+  <SolidColorBrush x:Key="Card" Color="#12151A" />
+  <SolidColorBrush x:Key="Raised" Color="#161A20" />
+  <SolidColorBrush x:Key="Hover" Color="#161A21" />
+  <SolidColorBrush x:Key="Tag" Color="#1A1F27" />
+  <SolidColorBrush x:Key="Line" Color="#1C2129" />
+  <SolidColorBrush x:Key="Line2" Color="#222832" />
+  <SolidColorBrush x:Key="Line3" Color="#262D38" />
+  <SolidColorBrush x:Key="Line4" Color="#2A313C" />
+  <SolidColorBrush x:Key="RowLine" Color="#161A20" />
+  <SolidColorBrush x:Key="Text" Color="#E8ECF2" />
+  <SolidColorBrush x:Key="Text2" Color="#C5CCD6" />
+  <SolidColorBrush x:Key="Muted" Color="#A3ADBC" />
+  <SolidColorBrush x:Key="Muted2" Color="#7D8797" />
+  <SolidColorBrush x:Key="Faint" Color="#6B7586" />
+  <SolidColorBrush x:Key="Faint2" Color="#5E6878" />
+  <SolidColorBrush x:Key="Dim" Color="#4E5767" />
+  <SolidColorBrush x:Key="Ink" Color="#0B0D10" />
+  <SolidColorBrush x:Key="Accent" Color="#FF8A3D" />
+  <SolidColorBrush x:Key="AccentText" Color="#FF9A52" />
+  <SolidColorBrush x:Key="AccentHi" Color="#FFB37E" />
+  <SolidColorBrush x:Key="AccentSoft" Color="#1F1610" />
+  <SolidColorBrush x:Key="Amber" Color="#FFD9A8" />
+  <SolidColorBrush x:Key="Ok" Color="#4BE39A" />
+  <SolidColorBrush x:Key="OkText" Color="#6BE3A4" />
+  <SolidColorBrush x:Key="OkSoft" Color="#163226" />
+  <SolidColorBrush x:Key="Warn" Color="#F5D06A" />
+  <SolidColorBrush x:Key="WarnSoft" Color="#3A3018" />
+  <SolidColorBrush x:Key="Err" Color="#FF6B76" />
+  <SolidColorBrush x:Key="ErrText" Color="#FF8A93" />
+  <SolidColorBrush x:Key="ErrSoft" Color="#3A1A1E" />
+  <SolidColorBrush x:Key="Info" Color="#7CC4F5" />
+  <SolidColorBrush x:Key="InfoSoft" Color="#162A3A" />
+
+  <!-- Fluent overrides so built-in controls pick up the palette. -->
+  <Color x:Key="SystemAccentColor">#FF8A3D</Color>
+  <Color x:Key="SystemAccentColorLight1">#FF9A52</Color>
+  <Color x:Key="SystemAccentColorLight2">#FFB37E</Color>
+  <Color x:Key="SystemAccentColorDark1">#E97A30</Color>
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOn" Color="#0B0D10" />
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPointerOver" Color="#0B0D10" />
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOnPressed" Color="#0B0D10" />
+  <SolidColorBrush x:Key="ToggleSwitchFillOff" Color="#232933" />
+  <SolidColorBrush x:Key="ToggleSwitchFillOffPointerOver" Color="#2A313C" />
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOff" Color="#232933" />
+  <SolidColorBrush x:Key="ToggleSwitchStrokeOffPointerOver" Color="#2A313C" />
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOff" Color="#7D8797" />
+  <SolidColorBrush x:Key="ToggleSwitchKnobFillOffPointerOver" Color="#A3ADBC" />
+  <SolidColorBrush x:Key="TextControlBackground" Color="#12151A" />
+  <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#161A20" />
+  <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#161A20" />
+  <SolidColorBrush x:Key="TextControlBorderBrush" Color="#262D38" />
+  <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#2A313C" />
+  <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#6B7586" />
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#7D8797" />
+  <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#6B7586" />
+  <SolidColorBrush x:Key="ComboBoxBackground" Color="#12151A" />
+  <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#161A20" />
+  <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#262D38" />
+  <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#12151A" />
+  <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#12151A" />
+  <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#2A313C" />
+  <CornerRadius x:Key="ControlCornerRadius">10</CornerRadius>
+  <CornerRadius x:Key="OverlayCornerRadius">12</CornerRadius>
+</ResourceDictionary>

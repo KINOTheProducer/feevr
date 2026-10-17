@@ -1,0 +1,127 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Tfmm.App.ViewModels"
+        xmlns:v="using:Tfmm.App.Views"
+        x:Class="Tfmm.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Feevr"
+        Icon="/Assets/feevr.ico"
+        Width="1440" Height="900" MinWidth="1100" MinHeight="680"
+        WindowStartupLocation="CenterScreen">
+
+  <Grid ColumnDefinitions="248,*">
+
+    <!-- Sidebar -->
+    <Border Background="{StaticResource Side}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0">
+      <DockPanel Margin="16,22,16,18">
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="12" Margin="6,0,0,28">
+          <v:Logo />
+          <StackPanel VerticalAlignment="Center" Spacing="0">
+            <TextBlock Text="FEEVR" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="24" LetterSpacing="1.2" />
+            <TextBlock Text="Transport Fever 3" FontSize="11.5" Foreground="{StaticResource Muted2}" />
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Active playset ticket -->
+        <Border DockPanel.Dock="Bottom" Classes="card" CornerRadius="14" ClipToBounds="True">
+          <StackPanel>
+            <StackPanel Margin="16,14,16,12" Spacing="4">
+              <TextBlock Text="NOW BOARDING" Classes="caption" />
+              <ComboBox ItemsSource="{Binding Playsets}" SelectedItem="{Binding ActivePlayset}" PlaceholderText="Choose a playset"
+                        HorizontalAlignment="Stretch" Background="Transparent" BorderThickness="0" Padding="0" Margin="-2,0,0,0"
+                        AutomationProperties.Name="Active playset">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="vm:PlaysetItem">
+                    <TextBlock Text="{Binding Name}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="21" TextTrimming="CharacterEllipsis" />
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Ellipse Width="8" Height="8" Fill="{Binding ActiveDot}" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding ActiveStatus}" FontSize="13" Foreground="{StaticResource Text2}" />
+              </StackPanel>
+            </StackPanel>
+            <Line StartPoint="0,0.5" EndPoint="400,0.5" Stroke="{StaticResource Line4}" StrokeThickness="1" StrokeDashArray="3,3" ClipToBounds="True" Height="1" />
+            <StackPanel Margin="16,12,16,14" Spacing="10">
+              <TextBlock Text="{Binding TicketStats}" Classes="mono" Foreground="{StaticResource Muted2}" HorizontalAlignment="Center" IsVisible="{Binding !IsGameRunning}" />
+              <Border IsVisible="{Binding IsGameRunning}" Background="{StaticResource ErrSoft}" CornerRadius="6" Padding="8,4" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <Ellipse Width="7" Height="7" Fill="{StaticResource Err}" VerticalAlignment="Center" />
+                  <TextBlock Text="{Binding LiveElapsed, StringFormat='RECORDING {0}'}" FontFamily="{StaticResource MonoFont}" FontSize="11" Foreground="{StaticResource ErrText}" />
+                </StackPanel>
+              </Border>
+              <Button Classes="primary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" MinHeight="46" Command="{Binding LaunchCommand}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <PathIcon Data="{StaticResource IconPlay}" Width="14" Height="14" />
+                  <TextBlock Text="Launch game" FontSize="15" FontWeight="Bold" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Spacing="2">
+          <TextBlock Text="MANAGE" Classes="caption" Margin="12,0,0,8" />
+          <RadioButton Classes="nav" GroupName="nav" Tag="{StaticResource IconLibrary}" IsChecked="{Binding IsLibrary}">
+            <Grid ColumnDefinitions="*,Auto" Width="164">
+              <TextBlock Text="Library" Foreground="{Binding $parent[ContentPresenter].Foreground}" />
+              <TextBlock Grid.Column="1" Text="{Binding InstalledCount}" FontFamily="{StaticResource MonoFont}" FontSize="11.5" Foreground="{StaticResource Faint}" VerticalAlignment="Center" />
+            </Grid>
+          </RadioButton>
+          <RadioButton Classes="nav" GroupName="nav" Content="Playsets" Tag="{StaticResource IconRoute}" IsChecked="{Binding IsPlaysets}" />
+          <RadioButton Classes="nav" GroupName="nav" Tag="{StaticResource IconPulse}" IsChecked="{Binding IsPerformance}">
+            <Grid ColumnDefinitions="*,Auto" Width="164">
+              <TextBlock Text="Performance" Foreground="{Binding $parent[ContentPresenter].Foreground}" />
+              <Ellipse Grid.Column="1" Width="7" Height="7" Fill="{StaticResource Err}" VerticalAlignment="Center" IsVisible="{Binding IsGameRunning}" />
+            </Grid>
+          </RadioButton>
+          <RadioButton Classes="nav" GroupName="nav" Content="Crashes" Tag="{StaticResource IconCrash}" IsChecked="{Binding IsCrashes}" />
+          <TextBlock Text="APP" Classes="caption" Margin="12,22,0,8" />
+          <RadioButton Classes="nav" GroupName="nav" Content="Settings" Tag="{StaticResource IconSettings}" IsChecked="{Binding IsSettings}" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Page -->
+    <Panel Grid.Column="1">
+      <DockPanel>
+        <!-- update banner -->
+        <Border DockPanel.Dock="Top" IsVisible="{Binding HasUpdate}" Margin="32,18,32,0" Padding="16,12"
+                CornerRadius="12" Background="{StaticResource AccentSoft}" BorderBrush="{StaticResource Accent}" BorderThickness="1">
+          <Grid ColumnDefinitions="Auto,*,Auto">
+            <Border Width="30" Height="30" CornerRadius="8" Background="{StaticResource Accent}" Margin="0,0,14,0" VerticalAlignment="Center">
+              <PathIcon Data="{StaticResource IconArrowRight}" Width="15" Height="15" Foreground="{StaticResource Ink}" RenderTransform="rotate(-90deg)" />
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+              <TextBlock Text="{Binding UpdateTitle}" FontWeight="Bold" FontSize="15" />
+              <TextBlock Text="{Binding UpdateNotes}" FontSize="13" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <TextBlock Text="{Binding UpdateStatus}" FontSize="13" Foreground="{StaticResource AccentText}" VerticalAlignment="Center" />
+              <Button Classes="ghost" Command="{Binding DismissUpdateCommand}" IsEnabled="{Binding !UpdateBusy}"><TextBlock Text="Later" /></Button>
+              <Button Classes="primary" Command="{Binding InstallUpdateCommand}" IsEnabled="{Binding !UpdateBusy}">
+                <TextBlock Text="Update and restart" />
+              </Button>
+            </StackPanel>
+          </Grid>
+        </Border>
+        <ContentControl Content="{Binding CurrentPage}" />
+      </DockPanel>
+
+      <Border IsVisible="{Binding Toast, Converter={x:Static ObjectConverters.IsNotNull}}"
+              HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,24"
+              Background="{StaticResource Raised}" BorderBrush="{StaticResource Line4}" BorderThickness="1"
+              CornerRadius="12" Padding="16,10,8,10" BoxShadow="0 12 32 0 #80000000">
+        <StackPanel Orientation="Horizontal" Spacing="10">
+          <PathIcon Data="{StaticResource IconOk}" Foreground="{StaticResource Ok}" IsVisible="{Binding !ToastIsError}" />
+          <PathIcon Data="{StaticResource IconErr}" Foreground="{StaticResource Err}" IsVisible="{Binding ToastIsError}" />
+          <TextBlock Text="{Binding Toast}" VerticalAlignment="Center" />
+          <Button Classes="ghost icon" Width="28" MinHeight="28" Command="{Binding DismissToastCommand}" AutomationProperties.Name="Dismiss">
+            <PathIcon Data="{StaticResource IconClose}" Width="12" Height="12" Foreground="{StaticResource Muted}" />
+          </Button>
+        </StackPanel>
+      </Border>
+    </Panel>
+  </Grid>
+</Window>

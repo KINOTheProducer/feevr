@@ -1,0 +1,341 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Tfmm.App.ViewModels"
+             xmlns:c="using:Tfmm.App.Controls"
+             xmlns:media="using:Avalonia.Media"
+             x:Class="Tfmm.App.Views.PerformanceView"
+             x:DataType="vm:PerformanceViewModel">
+
+  <ScrollViewer>
+    <StackPanel Margin="32,26,32,32" Spacing="20">
+
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="2">
+          <TextBlock Text="PERFORMANCE" Classes="eyebrow" />
+          <TextBlock Text="What your mods cost" Classes="h1" />
+        </StackPanel>
+        <Button Grid.Column="1" VerticalAlignment="Bottom" Command="{Binding OpenSettingsCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <PathIcon Data="{StaticResource IconSettings}" Width="15" Height="15" />
+            <TextBlock Text="Tracking settings" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <!-- LIVE -->
+      <Border Classes="panel" Padding="0" ClipToBounds="True">
+        <Grid ColumnDefinitions="360,*">
+          <Border BorderBrush="{StaticResource Line}" BorderThickness="0,0,1,0" Padding="22,18">
+            <StackPanel Spacing="14">
+              <Grid ColumnDefinitions="Auto,*">
+                <Border CornerRadius="5" Padding="7,2" Background="{StaticResource ErrSoft}" IsVisible="{Binding Main.IsGameRunning}" Margin="0,0,10,0">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Ellipse Width="7" Height="7" Fill="{StaticResource Err}" VerticalAlignment="Center" />
+                    <TextBlock Text="LIVE" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="12" LetterSpacing="1.4" Foreground="{StaticResource ErrText}" />
+                  </StackPanel>
+                </Border>
+                <Border CornerRadius="5" Padding="7,2" Background="{StaticResource Tag}" IsVisible="{Binding !Main.IsGameRunning}" Margin="0,0,10,0">
+                  <TextBlock Text="IDLE" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="12" LetterSpacing="1.4" Foreground="{StaticResource Muted2}" />
+                </Border>
+                <TextBlock Grid.Column="1" Text="{Binding Main.LiveElapsed}" Classes="mono" FontSize="13" Foreground="{StaticResource Muted2}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+              </Grid>
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding Main.LiveTitle}" Classes="h3" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Main.LiveDetail}" FontSize="13" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
+              </StackPanel>
+              <UniformGrid Columns="3">
+                <StackPanel Spacing="2">
+                  <TextBlock Text="CPU" Classes="caption" Foreground="{StaticResource Faint}" />
+                  <TextBlock Classes="stat"><Run Text="{Binding Main.LiveCpu}" /><Run Text="%" FontSize="14" Foreground="{StaticResource Dim}" /></TextBlock>
+                </StackPanel>
+                <StackPanel Spacing="2">
+                  <TextBlock Text="MEMORY" Classes="caption" Foreground="{StaticResource Faint}" />
+                  <TextBlock Classes="stat"><Run Text="{Binding Main.LiveRam}" /><Run Text="{Binding Main.LiveRamUnit}" FontSize="14" Foreground="{StaticResource Dim}" /></TextBlock>
+                </StackPanel>
+                <StackPanel Spacing="2">
+                  <TextBlock Text="THREADS" Classes="caption" Foreground="{StaticResource Faint}" />
+                  <TextBlock Text="{Binding Main.LiveThreads}" Classes="stat" />
+                </StackPanel>
+              </UniformGrid>
+            </StackPanel>
+          </Border>
+          <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto,*" Margin="22,16,22,16">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="CPU · LAST 2 MINUTES" Classes="caption" />
+              <TextBlock Grid.Column="1" Text="100%" Classes="mono" FontSize="10.5" Foreground="{StaticResource Dim}" />
+            </Grid>
+            <c:Sparkline Grid.Row="1" Values="{Binding Main.CpuSeries}" Maximum="100" Capacity="120" Stroke="{StaticResource Accent}" MinHeight="70" Margin="0,6,0,12" />
+            <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+              <TextBlock Text="MEMORY" Classes="caption" />
+              <TextBlock Grid.Column="1" Text="{Binding Main.RamMax, StringFormat='{}{0:0} MB'}" Classes="mono" FontSize="10.5" Foreground="{StaticResource Dim}" />
+            </Grid>
+            <c:Sparkline Grid.Row="3" Values="{Binding Main.RamSeries}" Maximum="{Binding Main.RamMax}" Capacity="120" Stroke="{StaticResource Info}" MinHeight="70" Margin="0,6,0,0" />
+          </Grid>
+        </Grid>
+      </Border>
+
+      <!-- COMPARE -->
+      <Border Classes="panel" Padding="22,18">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="COMPARE PLAYSETS" Classes="caption" />
+            <TextBlock Grid.Column="1" Text="{Binding CompareHint}" FontSize="12.5" Foreground="{StaticResource Muted2}" />
+          </Grid>
+          <Grid ColumnDefinitions="240,*,90,*,90,200" IsVisible="{Binding !NoSessions}">
+            <TextBlock Text="PLAYSET" Classes="caption" Foreground="{StaticResource Dim}" />
+            <TextBlock Grid.Column="1" Text="WORST-CASE CPU (P95)" Classes="caption" Foreground="{StaticResource Dim}" />
+            <TextBlock Grid.Column="3" Text="PEAK MEMORY" Classes="caption" Foreground="{StaticResource Dim}" Margin="20,0,0,0" />
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Compare}">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="10" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:CompareRow">
+                <Grid ColumnDefinitions="240,*,90,*,90,200">
+                  <StackPanel Spacing="1" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Name}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="18" />
+                    <TextBlock Text="{Binding Meta}" FontSize="12" Foreground="{StaticResource Muted2}" />
+                  </StackPanel>
+                  <ItemsControl Grid.Column="1" ItemsSource="{Binding CpuBar}" Height="14" VerticalAlignment="Center">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:WeightPanel Spacing="0" MinItemWidth="0" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate x:DataType="c:BarPart"><Border Background="{Binding Brush}" CornerRadius="3" /></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Grid.Column="2" Text="{Binding Cpu}" FontFamily="{StaticResource MonoFont}" FontSize="15" Foreground="{StaticResource Amber}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <ItemsControl Grid.Column="3" ItemsSource="{Binding RamBar}" Height="14" VerticalAlignment="Center" Margin="20,0,0,0">
+                    <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:WeightPanel Spacing="0" MinItemWidth="0" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate><DataTemplate x:DataType="c:BarPart"><Border Background="{Binding Brush}" CornerRadius="3" /></DataTemplate></ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                  <TextBlock Grid.Column="4" Text="{Binding Ram}" FontFamily="{StaticResource MonoFont}" FontSize="15" Foreground="{StaticResource Amber}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="5" Text="{Binding Delta}" FontSize="13" FontWeight="SemiBold" Foreground="{Binding DeltaFg}" HorizontalAlignment="Right" VerticalAlignment="Center" TextWrapping="Wrap" TextAlignment="Right" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <!-- SESSIONS -->
+      <Grid ColumnDefinitions="*,20,440">
+        <Border Classes="panel" ClipToBounds="True">
+          <StackPanel>
+            <Border Classes="head" Padding="18,12">
+              <Grid ColumnDefinitions="110,*,90,70,70,90,40">
+                <TextBlock Text="WHEN" Classes="caption" />
+                <TextBlock Grid.Column="1" Text="PLAYSET" Classes="caption" />
+                <TextBlock Grid.Column="2" Text="LENGTH" Classes="caption" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="3" Text="AVG" Classes="caption" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="4" Text="P95" Classes="caption" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="5" Text="PEAK RAM" Classes="caption" HorizontalAlignment="Right" />
+              </Grid>
+            </Border>
+            <StackPanel IsVisible="{Binding NoSessions}" Margin="18,26" Spacing="6">
+              <TextBlock Text="No sessions recorded yet" Classes="h3" />
+              <TextBlock Text="Keep Feevr open and start the game. Each play session is saved here with the playset you used." Classes="muted2 small" TextWrapping="Wrap" />
+            </StackPanel>
+            <ListBox Classes="rows" ItemsSource="{Binding Sessions}" SelectedItem="{Binding SelectedSession}" MaxHeight="340" AutoScrollToSelectedItem="False">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:SessionRow">
+                  <Panel>
+                    <Rectangle Classes="selbar" IsVisible="{Binding $parent[ListBoxItem].IsSelected}" />
+                    <Border Classes="row" Padding="18,0">
+                      <Grid ColumnDefinitions="110,*,90,70,70,90,40" Height="52">
+                        <StackPanel VerticalAlignment="Center" Spacing="1">
+                          <TextBlock Text="{Binding Date}" FontWeight="SemiBold" FontSize="13.5" />
+                          <TextBlock Text="{Binding Time}" Classes="mono" Foreground="{StaticResource Faint}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding Playset}" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="2" Text="{Binding Duration}" Classes="mono" FontSize="12.5" Foreground="{StaticResource Muted}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="3" Text="{Binding AvgCpu}" Classes="mono" FontSize="12.5" Foreground="{StaticResource Muted}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="4" Text="{Binding P95Cpu}" Classes="mono" FontSize="12.5" Foreground="{StaticResource Amber}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="5" Text="{Binding PeakRam}" Classes="mono" FontSize="12.5" Foreground="{StaticResource Muted}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <Button Grid.Column="6" Classes="ghost icon" Width="32" MinHeight="32" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                ToolTip.Tip="Delete session" AutomationProperties.Name="Delete session"
+                                Command="{Binding $parent[UserControl].((vm:PerformanceViewModel)DataContext).DeleteSessionCommand}" CommandParameter="{Binding}">
+                          <PathIcon Data="{StaticResource IconDelete}" Width="13" Height="13" Foreground="{StaticResource Faint}" />
+                        </Button>
+                      </Grid>
+                    </Border>
+                  </Panel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="2" Classes="card" Padding="20,18" IsVisible="{Binding SessionDetail, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <StackPanel DataContext="{Binding SessionDetail}" x:DataType="vm:SessionDetail" Spacing="12">
+            <StackPanel Spacing="2">
+              <TextBlock Text="{Binding Title}" Classes="h2" />
+              <TextBlock Text="{Binding Subtitle}" FontSize="12.5" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
+            </StackPanel>
+            <UniformGrid Columns="4">
+              <StackPanel Spacing="1"><TextBlock Text="AVG CPU" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding AvgCpu}" FontFamily="{StaticResource MonoFont}" FontSize="17" Foreground="{StaticResource Amber}" /></StackPanel>
+              <StackPanel Spacing="1"><TextBlock Text="P95 CPU" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding P95Cpu}" FontFamily="{StaticResource MonoFont}" FontSize="17" Foreground="{StaticResource Amber}" /></StackPanel>
+              <StackPanel Spacing="1"><TextBlock Text="AVG RAM" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding AvgRam}" FontFamily="{StaticResource MonoFont}" FontSize="17" Foreground="{StaticResource Amber}" /></StackPanel>
+              <StackPanel Spacing="1"><TextBlock Text="PEAK RAM" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding PeakRam}" FontFamily="{StaticResource MonoFont}" FontSize="17" Foreground="{StaticResource Amber}" /></StackPanel>
+            </UniformGrid>
+            <TextBlock Text="CPU OVER THE SESSION" Classes="caption" Margin="0,4,0,0" />
+            <c:Sparkline Values="{Binding Cpu}" Maximum="100" Stroke="{StaticResource Accent}" Height="70" />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="MEMORY" Classes="caption" />
+              <TextBlock Grid.Column="1" Text="{Binding RamMaxText}" Classes="mono" FontSize="10.5" Foreground="{StaticResource Dim}" />
+            </Grid>
+            <c:Sparkline Values="{Binding Ram}" Maximum="{Binding RamMax}" Stroke="{StaticResource Info}" Height="70" />
+            <TextBlock Text="{Binding Mods, StringFormat='Mods: {0}'}" FontSize="12.5" Foreground="{StaticResource Muted2}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <!-- MOD COST -->
+      <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+        <StackPanel Spacing="2">
+          <TextBlock Text="PER MOD" Classes="eyebrow" />
+          <TextBlock Text="Where the cost comes from" Classes="h2" />
+        </StackPanel>
+        <Border Grid.Column="1" VerticalAlignment="Bottom" Background="{StaticResource Card}" BorderBrush="{StaticResource Line3}" BorderThickness="1" CornerRadius="11" Padding="4">
+          <StackPanel Orientation="Horizontal" Spacing="2">
+            <RadioButton Classes="seg" GroupName="perfscope" Content="Active playset" IsChecked="{Binding ScopeActive}" />
+            <RadioButton Classes="seg" GroupName="perfscope" Content="All installed" IsChecked="{Binding ScopeAll}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="panel" Padding="20,18">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="SHARE OF COST" Classes="caption" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="{StaticResource IconPulse}" Width="14" Height="14" Foreground="{StaticResource AccentText}" IsVisible="{Binding HasProbe}" />
+              <TextBlock Text="{Binding ProbeStatus}" FontSize="12.5" Foreground="{StaticResource Muted2}" />
+            </StackPanel>
+          </Grid>
+          <ItemsControl ItemsSource="{Binding Budget}" Height="44">
+            <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:WeightPanel Spacing="3" MinItemWidth="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="c:BarPart">
+                <Border Background="{Binding Brush}" CornerRadius="6" Padding="8,6" ClipToBounds="True">
+                  <TextBlock Text="{Binding Label}" FontFamily="{StaticResource CondFont}" FontWeight="Bold" FontSize="14" Foreground="{Binding LabelBrush}" VerticalAlignment="Bottom" TextTrimming="CharacterEllipsis" />
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <UniformGrid Columns="4">
+            <StackPanel Spacing="2"><TextBlock Text="MODS" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding ModCount}" FontFamily="{StaticResource MonoFont}" FontSize="22" Foreground="{StaticResource Amber}" /></StackPanel>
+            <StackPanel Spacing="2"><TextBlock Text="ON DISK" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding Disk}" FontFamily="{StaticResource MonoFont}" FontSize="22" Foreground="{StaticResource Amber}" /></StackPanel>
+            <StackPanel Spacing="2"><TextBlock Text="PER-TICK SCRIPTS" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding Ticks}" FontFamily="{StaticResource MonoFont}" FontSize="22" Foreground="{StaticResource Amber}" /></StackPanel>
+            <StackPanel Spacing="2"><TextBlock Text="FLAGGED" Classes="caption" Foreground="{StaticResource Faint}" /><TextBlock Text="{Binding Flagged}" FontFamily="{StaticResource MonoFont}" FontSize="22" Foreground="{StaticResource Warn}" /></StackPanel>
+          </UniformGrid>
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="*,20,380">
+        <Border Classes="panel" ClipToBounds="True">
+          <StackPanel>
+            <Border Classes="head" Padding="18,12">
+              <Grid ColumnDefinitions="36,*,190,96,80,70">
+                <TextBlock Text="#" Classes="caption" />
+                <TextBlock Grid.Column="1" Text="MOD" Classes="caption" />
+                <TextBlock Grid.Column="2" Text="STATIC COST" Classes="caption" />
+                <TextBlock Grid.Column="3" Text="MEASURED" Classes="caption" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="4" Text="SIZE" Classes="caption" HorizontalAlignment="Right" />
+                <TextBlock Grid.Column="5" Text="FLAGS" Classes="caption" HorizontalAlignment="Right" />
+              </Grid>
+            </Border>
+            <TextBlock IsVisible="{Binding IsEmpty}" Text="Nothing to measure. Enable mods, or switch to All installed." Classes="muted2" Margin="18,22" />
+            <ListBox Classes="rows" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" AutoScrollToSelectedItem="False">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ModCostRow">
+                  <Panel>
+                    <Rectangle Classes="selbar" IsVisible="{Binding $parent[ListBoxItem].IsSelected}" />
+                    <Border Classes="row" Padding="18,0">
+                      <Grid ColumnDefinitions="36,*,190,96,80,70" Height="58">
+                        <TextBlock Text="{Binding Rank}" Classes="mono" Foreground="{StaticResource Faint}" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" Margin="0,0,12,0">
+                          <TextBlock Text="{Binding Name}" Classes="name" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding ModId}" Classes="mono" FontSize="11" Foreground="{StaticResource Faint2}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <Grid Grid.Column="2" ColumnDefinitions="*,32" VerticalAlignment="Center" Margin="0,0,12,0">
+                          <ItemsControl ItemsSource="{Binding Meter}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Rows="1" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                              <DataTemplate x:DataType="media:IBrush"><Border Height="12" CornerRadius="2" Margin="0,0,2,0" Background="{Binding}" /></DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                          </ItemsControl>
+                          <TextBlock Grid.Column="1" Text="{Binding Score}" FontFamily="{StaticResource MonoFont}" FontSize="13" Foreground="{StaticResource Amber}" HorizontalAlignment="Right" />
+                        </Grid>
+                        <TextBlock Grid.Column="3" Text="{Binding Measured}" FontFamily="{StaticResource MonoFont}" FontSize="13" Foreground="{Binding MeasuredFg}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="4" Text="{Binding Size}" Classes="mono" FontSize="12.5" Foreground="{StaticResource Muted}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="5" Text="{Binding FlagText}" FontSize="13" Foreground="{Binding FlagFg}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                      </Grid>
+                    </Border>
+                  </Panel>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="2" Classes="card" Padding="22,20" IsVisible="{Binding Selected, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <StackPanel DataContext="{Binding Selected}" x:DataType="vm:ModCostRow" Spacing="18">
+            <StackPanel Spacing="4">
+              <TextBlock Text="{Binding Name}" Classes="h2" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding FilesText}" Classes="mono" FontSize="12" Foreground="{StaticResource Muted2}" />
+            </StackPanel>
+            <Border IsVisible="{Binding HasTiming}" Background="{StaticResource Tag}" CornerRadius="8" Padding="10,8">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconPulse}" Width="14" Height="14" Foreground="{StaticResource AccentText}" />
+                <TextBlock Text="{Binding Timing}" FontSize="12.5" Foreground="{StaticResource Text2}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+            <StackPanel Spacing="10">
+              <TextBlock Text="WHERE THE BYTES GO" Classes="caption" />
+              <ItemsControl ItemsSource="{Binding KindBar}" Height="14">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><c:WeightPanel Spacing="2" MinItemWidth="3" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate><DataTemplate x:DataType="c:BarPart"><Border Background="{Binding Brush}" CornerRadius="2" /></DataTemplate></ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <ItemsControl ItemsSource="{Binding Kinds}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="6" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:KindRow">
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                      <Border Width="10" Height="10" CornerRadius="2" Background="{Binding Brush}" Margin="0,0,10,0" VerticalAlignment="Center" />
+                      <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="13" Foreground="{StaticResource Text2}" />
+                      <TextBlock Grid.Column="2" Text="{Binding Size}" Classes="mono" FontSize="12" Foreground="{StaticResource Muted}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+            <StackPanel Spacing="10">
+              <TextBlock Text="FLAGS" Classes="caption" />
+              <TextBlock Text="Nothing flagged." FontSize="13" Foreground="{StaticResource OkText}" IsVisible="{Binding Clean}" />
+              <ItemsControl ItemsSource="{Binding Flags}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Spacing="8" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <Grid ColumnDefinitions="Auto,*">
+                      <Border Classes="stamp" Background="{StaticResource WarnSoft}" Margin="0,2,10,0"><TextBlock Text="WARN" Foreground="{StaticResource Warn}" /></Border>
+                      <TextBlock Grid.Column="1" Text="{Binding}" FontSize="13.5" TextWrapping="Wrap" Foreground="#D3D9E2" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+            <StackPanel Spacing="6">
+              <TextBlock Text="LARGEST FILES" Classes="caption" />
+              <ItemsControl ItemsSource="{Binding Largest}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:KindRow">
+                    <Grid ColumnDefinitions="70,*" Margin="0,2">
+                      <TextBlock Text="{Binding Size}" Classes="mono" FontSize="12" Foreground="{StaticResource Amber}" HorizontalAlignment="Right" />
+                      <TextBlock Grid.Column="1" Text="{Binding Name}" Classes="mono" FontSize="12" Foreground="#8C96A6" Margin="10,0,0,0" TextTrimming="CharacterEllipsis" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
