@@ -287,4 +287,15 @@ public class StateTests
         Assert.Equal("etc-passwd", AppState.Slug("../../etc/passwd"));
         Assert.Equal("playset", AppState.Slug("..."));
     }
+
+    [Fact]
+    public void LaunchDefaultsToSteam()
+    {
+        var c = new Config();
+        Assert.Equal("steam://rungameid/3493540", c.LaunchCommand);
+        c.Launch = "  ";
+        Assert.Equal(Config.DefaultLaunch, c.LaunchCommand);
+        c.Launch = @"C:\Games\TF3\TransportFever3.exe";
+        Assert.Equal(c.Launch, c.LaunchCommand);
+    }
 }

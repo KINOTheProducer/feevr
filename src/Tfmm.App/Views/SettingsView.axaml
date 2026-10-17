@@ -100,8 +100,8 @@
             </Border>
             <TextBlock Text="How to start the game" Classes="h3" FontSize="24" VerticalAlignment="Center" />
           </StackPanel>
-          <TextBlock Text="Steam link or path to the game's .exe, used by Launch game." FontSize="13.5" Foreground="{StaticResource Muted}" />
-          <TextBox Classes="mono" Text="{Binding Launch, UpdateSourceTrigger=LostFocus}" Watermark="steam://rungameid/[TF3 APP ID]" AutomationProperties.Name="Launch command" />
+          <TextBlock Text="Steam link or path to the game's .exe, used by Launch game. Leave empty to launch through Steam." FontSize="13.5" Foreground="{StaticResource Muted}" />
+          <TextBox Classes="mono" Text="{Binding Launch, UpdateSourceTrigger=LostFocus}" Watermark="steam://rungameid/3493540" AutomationProperties.Name="Launch command" />
         </StackPanel>
       </Border>
 

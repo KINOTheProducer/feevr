@@ -39,7 +39,7 @@ public sealed class CrashReport
 /// TF2's, so all of it is unverified for TF3. Matching is loose on purpose.</summary>
 public static partial class CrashLogs
 {
-    public const string SteamAppId = "3493540";  // unverified
+    public const string SteamAppId = "3493540";
     const long MaxRead = 16L << 20;
     const int ContextLines = 12;
 

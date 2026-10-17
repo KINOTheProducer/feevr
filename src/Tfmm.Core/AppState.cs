@@ -9,8 +9,10 @@ public sealed class Config
 {
     public Dictionary<ModSource, List<string>> Roots { get; set; } = [];
     public string? Active { get; set; }
-    /// <summary>Steam URL (steam://rungameid/APPID) or exe path. TF3 app id unverified, user sets it.</summary>
+    public const string DefaultLaunch = "steam://rungameid/" + CrashLogs.SteamAppId;
+    /// <summary>Steam URL or exe path. Empty = <see cref="DefaultLaunch"/>.</summary>
     public string Launch { get; set; } = "";
+    public string LaunchCommand => Launch.Trim() is { Length: > 0 } l ? l : DefaultLaunch;
     /// <summary>Process name(s) to watch, comma separated. TF3's exe name is unverified.</summary>
     public string GameProcess { get; set; } = "TransportFever3";
     /// <summary>Lua file written by the perf-probe mod (in the game's userdata folder, path unverified).</summary>
@@ -242,9 +244,7 @@ public sealed partial class AppState
 
     public void Launch()
     {
-        var cmd = Config.Launch.Trim();
-        if (cmd.Length == 0) throw new InvalidOperationException("Set a launch command in Settings first.");
-        Process.Start(new ProcessStartInfo(cmd) { UseShellExecute = true });
+        Process.Start(new ProcessStartInfo(Config.LaunchCommand) { UseShellExecute = true });
     }
 
     public static void OpenFolder(string path) =>
