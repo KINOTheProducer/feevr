@@ -9,8 +9,10 @@ public sealed class Config
 {
     public Dictionary<ModSource, List<string>> Roots { get; set; } = [];
     public string? Active { get; set; }
-    /// <summary>Steam URL (steam://rungameid/APPID) or exe path. TF3 app id unverified, user sets it.</summary>
+    public const string DefaultLaunch = "steam://rungameid/" + CrashLogs.SteamAppId;
+    /// <summary>Steam URL or exe path. Empty = <see cref="DefaultLaunch"/>.</summary>
     public string Launch { get; set; } = "";
+    public string LaunchCommand => Launch.Trim() is { Length: > 0 } l ? l : DefaultLaunch;
     /// <summary>Process name(s) to watch, comma separated. TF3's exe name is unverified.</summary>
     public string GameProcess { get; set; } = "TransportFever3";
     /// <summary>Lua file written by the perf-probe mod (in the game's userdata folder, path unverified).</summary>
@@ -21,6 +23,8 @@ public sealed class Config
     public string ModIoApiKey { get; set; } = "";
     /// <summary>Folder with the game's stdout/crash logs. Empty = look in the usual places.</summary>
     public string CrashDir { get; set; } = "";
+    /// <summary>The game's settings.lua, where Launch writes the active playset. Empty = find it in Steam's userdata.</summary>
+    public string GameSettings { get; set; } = "";
 }
 
 /// <summary>Source-generated so the app can be trimmed.</summary>
@@ -240,11 +244,30 @@ public sealed partial class AppState
         return added.Count;
     }
 
+    public string? GameSettingsFile() =>
+        Config.GameSettings.Trim() is { Length: > 0 } f ? f : Tfmm.Core.GameSettings.DefaultFiles().FirstOrDefault();
+
+    public bool GameRunning() =>
+        GameProcessNames().SelectMany(n => Process.GetProcessesByName(Path.GetFileNameWithoutExtension(n))).Any();
+
+    /// <summary>Puts the active playset's mods, in load order, on the game's New Game screen.
+    /// Returns how many mods it wrote, or null when there is no active playset.</summary>
+    public int? WriteActivePlayset()
+    {
+        if (Active is not { } ps) return null;
+        var file = GameSettingsFile();
+        if (file is null || !File.Exists(file))
+            throw new InvalidOperationException("Can't find the game's settings.lua. Start the game once, or set its path in Settings.");
+        // the game rewrites settings.lua when it quits, which would undo this
+        if (GameRunning()) throw new InvalidOperationException("Close Transport Fever 3 first so it doesn't overwrite the playset.");
+        var order = Check(ps).Order;
+        Tfmm.Core.GameSettings.WriteActiveMods(file, order);
+        return order.Count;
+    }
+
     public void Launch()
     {
-        var cmd = Config.Launch.Trim();
-        if (cmd.Length == 0) throw new InvalidOperationException("Set a launch command in Settings first.");
-        Process.Start(new ProcessStartInfo(cmd) { UseShellExecute = true });
+        Process.Start(new ProcessStartInfo(Config.LaunchCommand) { UseShellExecute = true });
     }
 
     public static void OpenFolder(string path) =>
