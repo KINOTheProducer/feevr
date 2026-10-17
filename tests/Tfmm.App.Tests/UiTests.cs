@@ -1,7 +1,9 @@
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
+using Avalonia.Controls;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Tfmm.App;
 using Tfmm.App.ViewModels;
 using Tfmm.App.Views;
@@ -29,6 +31,14 @@ public class UiTests
         w.Show();
         Pump();
         return (w, vm);
+    }
+
+    static void Click(MainWindow w, Control c)
+    {
+        var p = c.TranslatePoint(new Point(c.Bounds.Width / 2, c.Bounds.Height / 2), w)!.Value;
+        w.MouseMove(p);
+        w.MouseDown(p, Avalonia.Input.MouseButton.Left);
+        w.MouseUp(p, Avalonia.Input.MouseButton.Left);
     }
 
     static void Pump()
@@ -156,6 +166,42 @@ public class UiTests
         pg.Name = "Renamed";
         Pump();
         Assert.Contains(vm.Playsets, p => p.Name == "Renamed");
+    }
+
+    [AvaloniaFact]
+    public void TogglingKeepsScrollPosition()
+    {
+        var (w, vm) = Open();
+        w.Height = 500;
+        Pump();
+        var list = w.GetVisualDescendants().OfType<ListBox>().First(l => l.Classes.Contains("rows"));
+        var sv = list.GetVisualDescendants().OfType<ScrollViewer>().First();
+        sv.Offset = new Vector(0, sv.Extent.Height - sv.Viewport.Height);
+        Pump();
+        var before = sv.Offset.Y;
+        Assert.True(before > 0);
+        var toggle = list.GetVisualDescendants().OfType<ToggleSwitch>().Where(t => t.IsEffectivelyVisible && t.TranslatePoint(new Point(0, 0), w) is { Y: > 300 and < 480 }).Last();
+        var was = toggle.IsChecked;
+        Click(w, toggle);
+        Pump();
+        Assert.NotEqual(was, ((ModItem)toggle.DataContext!).IsEnabled);
+        Assert.Equal(before, sv.Offset.Y);
+
+        vm.Page = "playsets";
+        Pump();
+        var page = w.GetVisualDescendants().OfType<PlaysetsView>().First();
+        var psv = page.GetVisualDescendants().OfType<ScrollViewer>().First(s => s.IsVisible && s.Extent.Height > s.Viewport.Height);
+        psv.Offset = new Vector(0, psv.Extent.Height - psv.Viewport.Height);
+        Pump();
+        var pBefore = psv.Offset.Y;
+        Assert.True(pBefore > 0);
+        var btn = page.GetVisualDescendants().OfType<Button>().First(b => b.IsEffectivelyVisible && b.Content as string == "Enable");
+        btn.BringIntoView();
+        Pump();
+        pBefore = psv.Offset.Y;
+        Click(w, btn);
+        Pump();
+        Assert.True(psv.Offset.Y > 0, $"playsets scrolled to {psv.Offset.Y}");
     }
 
     [AvaloniaFact]

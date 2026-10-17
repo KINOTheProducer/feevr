@@ -359,11 +359,8 @@ public partial class MainViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var n = State.WriteActivePlayset();
             State.Launch();
-            Notify(n is { } c
-                ? $"Launching with {Plural(c, "mod")} ready on the New Game screen. Saves keep their own mods."
-                : "Launching Transport Fever 3. Recording starts when it is up.");
+            Notify("Launching Transport Fever 3. Recording starts when it is up.");
         }
         catch (Exception e) { Notify(e.Message, true); }
     }

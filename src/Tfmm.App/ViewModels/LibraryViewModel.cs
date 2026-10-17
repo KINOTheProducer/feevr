@@ -10,7 +10,7 @@ namespace Tfmm.App.ViewModels;
 public partial class ModItem : ObservableObject
 {
     readonly MainViewModel _main;
-    public Mod Mod { get; }
+    public Mod Mod { get; private set; }
     public ModItem(MainViewModel main, Mod mod, bool enabled, string level, string statusText)
     {
         _main = main;
@@ -20,6 +20,15 @@ public partial class ModItem : ObservableObject
         StatusText = statusText;
     }
 
+    /// <summary>Refreshes the row in place so the list keeps its scroll and focus. Does not re-run the toggle.</summary>
+    public void Update(Mod mod, bool enabled, string level, string statusText)
+    {
+#pragma warning disable MVVMTK0034 // set the field so OnIsEnabledChanged doesn't toggle again
+        (Mod, _isEnabled, Level, StatusText) = (mod, enabled, level, statusText);
+#pragma warning restore MVVMTK0034
+        OnPropertyChanged(string.Empty);
+    }
+
     public string Name => Mod.DisplayName;
     public string ModId => Mod.ModId;
     public string IdLine => $"{Mod.ModId} · r{Mod.Revision}";
@@ -27,8 +36,8 @@ public partial class ModItem : ObservableObject
     public string Mono => Monogram(Mod.DisplayName);
     public IBrush MonoBrush => IsEnabled ? Pal.AccentHi : Pal.Muted2;
     public IReadOnlyList<string> Tags => Mod.Tags.Take(3).ToList();
-    public string Level { get; }
-    public string StatusText { get; }
+    public string Level { get; private set; }
+    public string StatusText { get; private set; }
     public IBrush StatusDot => Pal.Dot(Level);
     public IBrush StatusFg => Pal.Fg(Level);
     public bool IsIssue => Level is "err" or "warn";
@@ -87,6 +96,7 @@ public partial class LibraryViewModel : ObservableObject
 {
     readonly MainViewModel _main;
     List<ModItem> _all = [];
+    bool _reloading;
 
     public ObservableCollection<ModItem> Items { get; } = [];
     public ObservableCollection<string> TagOptions { get; } = [];
@@ -133,6 +143,7 @@ public partial class LibraryViewModel : ObservableObject
         var keep = Selected?.ModId;
         var active = _main.Active?.Mods.ToHashSet() ?? [];
         var byMod = _main.Report.Issues.GroupBy(i => i.ModId).ToDictionary(g => g.Key, g => g.ToList());
+        var old = _all.ToDictionary(i => i.ModId);
         _all = _main.State.ModsSorted().Select(m =>
         {
             var on = active.Contains(m.ModId);
@@ -141,7 +152,9 @@ public partial class LibraryViewModel : ObservableObject
             int warn = (iss?.Count(i => i.Level == IssueLevel.Warning) ?? 0) + (on ? 0 : m.Warnings.Count);
             var level = err > 0 ? "err" : warn > 0 ? "warn" : on ? "ok" : "idle";
             var text = err > 0 ? MainViewModel.Plural(err, "error") : warn > 0 ? MainViewModel.Plural(warn, "warning") : on ? "Ready" : "Off";
-            return new ModItem(_main, m, on, level, text);
+            if (!old.TryGetValue(m.ModId, out var item)) return new ModItem(_main, m, on, level, text);
+            item.Update(m, on, level, text);
+            return item;
         }).ToList();
 
         var enabled = _all.Count(i => i.IsEnabled);
@@ -158,14 +171,26 @@ public partial class LibraryViewModel : ObservableObject
         IssuesLabel = $"Needs attention  {issues}";
 
         var tag = Tag;
-        TagOptions.Clear();
-        TagOptions.Add(AllTags);
-        foreach (var t in _all.SelectMany(i => i.Mod.Tags).Distinct().Order()) TagOptions.Add(t);
-        Tag = TagOptions.Contains(tag) ? tag : AllTags;
+        var tags = _all.SelectMany(i => i.Mod.Tags).Distinct().Order().Prepend(AllTags).ToList();
+        if (!tags.SequenceEqual(TagOptions))
+        {
+            // clearing the options nulls the ComboBox selection, which would filter with no tag
+            _reloading = true;
+            try
+            {
+                TagOptions.Clear();
+                foreach (var t in tags) TagOptions.Add(t);
+                Tag = TagOptions.Contains(tag) ? tag : AllTags;
+            }
+            finally { _reloading = false; }
+        }
         Apply(keep);
     }
 
-    void Apply() => Apply(Selected?.ModId);
+    void Apply()
+    {
+        if (!_reloading) Apply(Selected?.ModId);
+    }
 
     void Apply(string? keep)
     {
@@ -176,10 +201,20 @@ public partial class LibraryViewModel : ObservableObject
             (Filter != "enabled" || i.IsEnabled) &&
             (Filter != "issues" || i.IsIssue) &&
             (Tag == AllTags || i.Mod.Tags.Contains(Tag))).ToList();
-        Items.Clear();
-        foreach (var i in list) Items.Add(i);
+        // edit in place: clearing the list would throw its scroll back to the top
+        var want = list.ToHashSet();
+        for (int i = Items.Count - 1; i >= 0; i--)
+            if (!want.Contains(Items[i])) Items.RemoveAt(i);
+        for (int i = 0; i < list.Count; i++)
+        {
+            var at = Items.IndexOf(list[i]);
+            if (at < 0) Items.Insert(i, list[i]);
+            else if (at != i) Items.Move(at, i);
+        }
         IsEmpty = Items.Count == 0;
-        Selected = Items.FirstOrDefault(i => i.ModId == keep) ?? Items.FirstOrDefault();
+        var sel = Items.FirstOrDefault(i => i.ModId == keep) ?? Items.FirstOrDefault();
+        if (sel == Selected && sel is not null) Detail = BuildDetail(sel);
+        else Selected = sel;
     }
 
     ModDetail BuildDetail(ModItem item)
